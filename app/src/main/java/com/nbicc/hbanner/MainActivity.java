@@ -43,15 +43,15 @@ public class MainActivity extends AppCompatActivity {
                 .start();
 
         /**
-         * 纯视频点播模式
+         * 纯视频点播模式 暂未实现
          */
-        List<ViewItemBean> list2 = new ArrayList<>();
-        list.add(new ViewItemBean(VIDEO, path1, NO_TIME_SET));
-        list.add(new ViewItemBean(VIDEO, path2, NO_TIME_SET));
-        banner2.setViews(list2)
-                .setBannerAnimation(VerticalPageTransformer.class)
-                .setBannerStyle(BannerStyle.NUM_INDICATOR_TITLE)
-                .start();
+//        List<ViewItemBean> list2 = new ArrayList<>();
+//        list.add(new ViewItemBean(VIDEO, path1, NO_TIME_SET));
+//        list.add(new ViewItemBean(VIDEO, path2, NO_TIME_SET));
+//        banner2.setViews(list2)
+//                .setBannerAnimation(VerticalPageTransformer.class)
+//                .setBannerStyle(BannerStyle.NUM_INDICATOR_TITLE)
+//                .start();
     }
 
 }
