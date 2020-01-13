@@ -2,13 +2,22 @@ package com.lake.banner.loader;
 
 import android.view.View;
 
-public class ViewItem {
+public class ViewItem extends ViewItemBean {
     View view;
-    int Time;
 
-    public ViewItem(View view, int time) {
+    public ViewItem(View view) {
         this.view = view;
-        Time = time;
+    }
+
+    public ViewItem(View view, ViewItemBean bean) {
+        this.view = view;
+        setViewItemBean(bean);
+    }
+
+    public void setViewItemBean(ViewItemBean bean) {
+        this.type = bean.getType();
+        this.url = bean.getUrl();
+        this.Time = bean.getTime();
     }
 
     public View getView() {
@@ -19,18 +28,12 @@ public class ViewItem {
         this.view = view;
     }
 
-    public int getTime() {
-        return Time;
-    }
-
-    public void setTime(int time) {
-        Time = time;
-    }
-
     @Override
     public String toString() {
         return "ViewItem{" +
                 "view=" + view +
+                ", type=" + type +
+                ", url=" + url +
                 ", Time=" + Time +
                 '}';
     }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <declare-styleable name="Banner">
+    <declare-styleable name="HBanner">
         <attr name="delay_time" format="integer" />
         <attr name="scroll_time" format="integer" />
         <attr name="is_auto_play" format="boolean" />

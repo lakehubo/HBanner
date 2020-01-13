@@ -3,27 +3,39 @@ package com.lake.banner.loader;
 import com.lake.banner.BannerConfig;
 import com.lake.banner.R;
 
-
 /**
  * 轮播自定义子项目内容
  */
 public class ViewItemBean {
-    private Object url;//子视图地址
-    private int Time;//子视图显示时间
+    protected int type;//播放类型
+    protected Object url;//子视图地址
+    protected int Time;//子视图显示时间
 
-    public ViewItemBean(Object url, int time) {
+    public ViewItemBean(int type, Object url, int time) {
+        this.type = type;
         this.url = url;
         Time = time;
     }
 
-    public ViewItemBean(Object url) {
+    //拥有默认时间的视图
+    public ViewItemBean(int type, Object url) {
         this.url = url;
         Time = BannerConfig.TIME;
     }
 
+    //用于视频图片交替时候的过度对象
     public ViewItemBean() {
+        this.type = BannerConfig.IMAGE;
         this.url = R.mipmap.defaultvideobg;
         Time = 5;
+    }
+
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
     }
 
     public Object getUrl() {
@@ -45,7 +57,8 @@ public class ViewItemBean {
     @Override
     public String toString() {
         return "ViewItemBean{" +
-                "url='" + url + '\'' +
+                "type=" + type +
+                ", url=" + url +
                 ", Time=" + Time +
                 '}';
     }

@@ -2,7 +2,7 @@ package com.lake.banner;
 
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.graphics.Color;
+import android.support.annotation.IntRange;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
@@ -21,31 +21,28 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.VideoView;
-
-import com.lake.banner.listener.OnBannerClickListener;
 import com.lake.banner.listener.OnBannerListener;
+import com.lake.banner.loader.ImageLoader;
+import com.lake.banner.loader.VideoLoader;
+import com.lake.banner.loader.VideoViewLoaderInterface;
 import com.lake.banner.loader.ViewItem;
 import com.lake.banner.loader.ViewItemBean;
 import com.lake.banner.loader.ViewLoaderInterface;
-import com.lake.banner.utils.FileTypeUtil;
 import com.lake.banner.view.BannerViewPager;
-
-import java.io.File;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
-
 import static android.support.v4.view.ViewPager.OnPageChangeListener;
 import static android.support.v4.view.ViewPager.PageTransformer;
 
-public class Banner extends FrameLayout implements OnPageChangeListener {
-    public String tag = "banner";
+public class HBanner extends FrameLayout implements OnPageChangeListener {
+    public static final String TAG = HBanner.class.getSimpleName();
     private int mIndicatorMargin = BannerConfig.PADDING_SIZE;
     private int mIndicatorWidth;
     private int mIndicatorHeight;
     private int indicatorSize;
     private int bannerBackgroundImage;
-    private int bannerStyle = BannerConfig.CIRCLE_INDICATOR;
+    private int bannerStyle = BannerStyle.CIRCLE_INDICATOR;
     private int delayTime = BannerConfig.TIME;
     private int scrollTime = BannerConfig.DURATION;
     private boolean isAutoPlay = BannerConfig.IS_AUTO_PLAY;
@@ -64,8 +61,8 @@ public class Banner extends FrameLayout implements OnPageChangeListener {
     private int scaleType = 1;
     private List<String> titles;
     private List imageUrls;
-    private List<ViewItem> imageViews;//内容
-    private volatile VideoView currentVideoView;//当前视频子窗口
+    private final List<ViewItem> itemViews;//内容
+    private int lastItem;//当前视频子窗口
     private List<ImageView> indicatorImages;//指示器数组
     private Context context;
     private BannerViewPager viewPager;
@@ -73,30 +70,29 @@ public class Banner extends FrameLayout implements OnPageChangeListener {
     private LinearLayout indicator, indicatorInside, titleView;
     private ImageView bannerDefaultImage;
     private ViewLoaderInterface imageLoader;
-    private ViewLoaderInterface videoLoader;
+    private VideoViewLoaderInterface videoLoader;
     private BannerPagerAdapter adapter;
     private OnPageChangeListener mOnPageChangeListener;
     private BannerScroller mScroller;
-    private OnBannerClickListener bannerListener;
     private OnBannerListener listener;
     private DisplayMetrics dm;
 
     private WeakHandler handler = new WeakHandler();
 
-    public Banner(Context context) {
+    public HBanner(Context context) {
         this(context, null);
     }
 
-    public Banner(Context context, AttributeSet attrs) {
+    public HBanner(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public Banner(Context context, AttributeSet attrs, int defStyle) {
+    public HBanner(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         this.context = context;
         titles = new ArrayList<>();
         imageUrls = new ArrayList<>();
-        imageViews = new ArrayList<>();
+        itemViews = new ArrayList<>();
         indicatorImages = new ArrayList<>();
         dm = context.getResources().getDisplayMetrics();
         indicatorSize = dm.widthPixels / 80;
@@ -104,7 +100,7 @@ public class Banner extends FrameLayout implements OnPageChangeListener {
     }
 
     private void initView(Context context, AttributeSet attrs) {
-        imageViews.clear();
+        itemViews.clear();
         handleTypedArray(context, attrs);
         View view = LayoutInflater.from(context).inflate(mLayoutResId, this, true);
         bannerDefaultImage = view.findViewById(R.id.bannerDefaultImage);
@@ -123,22 +119,22 @@ public class Banner extends FrameLayout implements OnPageChangeListener {
         if (attrs == null) {
             return;
         }
-        TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.Banner);
-        mIndicatorWidth = typedArray.getDimensionPixelSize(R.styleable.Banner_indicator_width, indicatorSize);
-        mIndicatorHeight = typedArray.getDimensionPixelSize(R.styleable.Banner_indicator_height, indicatorSize);
-        mIndicatorMargin = typedArray.getDimensionPixelSize(R.styleable.Banner_indicator_margin, BannerConfig.PADDING_SIZE);
-        mIndicatorSelectedResId = typedArray.getResourceId(R.styleable.Banner_indicator_drawable_selected, R.drawable.gray_radius);
-        mIndicatorUnselectedResId = typedArray.getResourceId(R.styleable.Banner_indicator_drawable_unselected, R.drawable.white_radius);
-        scaleType = typedArray.getInt(R.styleable.Banner_image_scale_type, scaleType);
-        delayTime = typedArray.getInt(R.styleable.Banner_delay_time, BannerConfig.TIME);
-        scrollTime = typedArray.getInt(R.styleable.Banner_scroll_time, BannerConfig.DURATION);
-        isAutoPlay = typedArray.getBoolean(R.styleable.Banner_is_auto_play, BannerConfig.IS_AUTO_PLAY);
-        titleBackground = typedArray.getColor(R.styleable.Banner_title_background, BannerConfig.TITLE_BACKGROUND);
-        titleHeight = typedArray.getDimensionPixelSize(R.styleable.Banner_title_height, BannerConfig.TITLE_HEIGHT);
-        titleTextColor = typedArray.getColor(R.styleable.Banner_title_textcolor, BannerConfig.TITLE_TEXT_COLOR);
-        titleTextSize = typedArray.getDimensionPixelSize(R.styleable.Banner_title_textsize, BannerConfig.TITLE_TEXT_SIZE);
-        mLayoutResId = typedArray.getResourceId(R.styleable.Banner_banner_layout, mLayoutResId);
-        bannerBackgroundImage = typedArray.getResourceId(R.styleable.Banner_banner_default_image, R.drawable.no_banner);
+        TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.HBanner);
+        mIndicatorWidth = typedArray.getDimensionPixelSize(R.styleable.HBanner_indicator_width, indicatorSize);
+        mIndicatorHeight = typedArray.getDimensionPixelSize(R.styleable.HBanner_indicator_height, indicatorSize);
+        mIndicatorMargin = typedArray.getDimensionPixelSize(R.styleable.HBanner_indicator_margin, BannerConfig.PADDING_SIZE);
+        mIndicatorSelectedResId = typedArray.getResourceId(R.styleable.HBanner_indicator_drawable_selected, R.drawable.gray_radius);
+        mIndicatorUnselectedResId = typedArray.getResourceId(R.styleable.HBanner_indicator_drawable_unselected, R.drawable.white_radius);
+        scaleType = typedArray.getInt(R.styleable.HBanner_image_scale_type, scaleType);
+        delayTime = typedArray.getInt(R.styleable.HBanner_delay_time, BannerConfig.TIME);
+        scrollTime = typedArray.getInt(R.styleable.HBanner_scroll_time, BannerConfig.DURATION);
+        isAutoPlay = typedArray.getBoolean(R.styleable.HBanner_is_auto_play, BannerConfig.IS_AUTO_PLAY);
+        titleBackground = typedArray.getColor(R.styleable.HBanner_title_background, BannerConfig.TITLE_BACKGROUND);
+        titleHeight = typedArray.getDimensionPixelSize(R.styleable.HBanner_title_height, BannerConfig.TITLE_HEIGHT);
+        titleTextColor = typedArray.getColor(R.styleable.HBanner_title_textcolor, BannerConfig.TITLE_TEXT_COLOR);
+        titleTextSize = typedArray.getDimensionPixelSize(R.styleable.HBanner_title_textsize, BannerConfig.TITLE_TEXT_SIZE);
+        mLayoutResId = typedArray.getResourceId(R.styleable.HBanner_banner_layout, mLayoutResId);
+        bannerBackgroundImage = typedArray.getResourceId(R.styleable.HBanner_banner_default_image, R.drawable.no_banner);
         typedArray.recycle();
     }
 
@@ -150,53 +146,53 @@ public class Banner extends FrameLayout implements OnPageChangeListener {
             mScroller.setDuration(scrollTime);
             mField.set(viewPager, mScroller);
         } catch (Exception e) {
-            Log.e(tag, e.getMessage());
+            Log.e(TAG, e.getMessage());
         }
     }
 
 
-    public Banner isAutoPlay(boolean isAutoPlay) {
+    public HBanner isAutoPlay(boolean isAutoPlay) {
         this.isAutoPlay = isAutoPlay;
         return this;
     }
 
     //设置图片加载器
-    public Banner setImageLoader(ViewLoaderInterface imageLoader) {
+    public HBanner setImageLoader(ViewLoaderInterface imageLoader) {
         this.imageLoader = imageLoader;
         return this;
     }
 
     // 设置视频加载器
-    public Banner setVideoLoader(ViewLoaderInterface videoLoader) {
+    public HBanner setVideoLoader(VideoViewLoaderInterface videoLoader) {
         this.videoLoader = videoLoader;
         return this;
     }
 
-    public Banner setDelayTime(int delayTime) {
+    public HBanner setDelayTime(int delayTime) {
         this.delayTime = delayTime;
         return this;
     }
 
-    public Banner setIndicatorGravity(int type) {
+    public HBanner setIndicatorGravity(@IntRange(from = IndicatorGravity.LEFT, to = IndicatorGravity.RIGHT) int type) {
         switch (type) {
-            case BannerConfig.LEFT:
+            case IndicatorGravity.LEFT:
                 this.gravity = Gravity.LEFT | Gravity.CENTER_VERTICAL;
                 break;
-            case BannerConfig.CENTER:
+            case IndicatorGravity.CENTER:
                 this.gravity = Gravity.CENTER;
                 break;
-            case BannerConfig.RIGHT:
+            case IndicatorGravity.RIGHT:
                 this.gravity = Gravity.RIGHT | Gravity.CENTER_VERTICAL;
                 break;
         }
         return this;
     }
 
-    public Banner setBannerAnimation(Class<? extends PageTransformer> transformer) {
+    public HBanner setBannerAnimation(Class<? extends PageTransformer> transformer) {
         try {
             setPageTransformer(true, transformer.newInstance());
         } catch (Exception e) {
-            Log.e(tag, "Please set the PageTransformer class");
+            Log.e(TAG, "Please set the PageTransformer class");
         }
         return this;
     }
@@ -209,7 +205,7 @@ public class Banner extends FrameLayout implements OnPageChangeListener {
      * @param limit How many pages will be kept offscreen in an idle state.
      * @return Banner
      */
-    public Banner setOffscreenPageLimit(int limit) {
+    public HBanner setOffscreenPageLimit(int limit) {
         if (viewPager != null) {
             viewPager.setOffscreenPageLimit(limit);
         }
@@ -226,28 +222,29 @@ public class Banner extends FrameLayout implements OnPageChangeListener {
      * @param transformer         PageTransformer that will modify each page's animation properties
      * @return Banner
      */
-    public Banner setPageTransformer(boolean reverseDrawingOrder, PageTransformer transformer) {
+    public HBanner setPageTransformer(boolean reverseDrawingOrder, PageTransformer transformer) {
         viewPager.setPageTransformer(reverseDrawingOrder, transformer);
         return this;
     }
 
-    public Banner setBannerTitles(List<String> titles) {
+    public HBanner setBannerTitles(List<String> titles) {
         this.titles = titles;
         return this;
     }
 
-    public Banner setBannerStyle(int bannerStyle) {
+    public HBanner setBannerStyle(@IntRange(from = BannerStyle.NOT_INDICATOR
+            , to = BannerStyle.CIRCLE_INDICATOR_TITLE_INSIDE) int bannerStyle) {
         this.bannerStyle = bannerStyle;
         return this;
     }
 
-    public Banner setViewPagerIsScroll(boolean isScroll) {
+    public HBanner setViewPagerIsScroll(boolean isScroll) {
         this.isScroll = isScroll;
         return this;
     }
 
     //设置子试图列表
-    public Banner setViews(List<?> imageUrls) {
+    public HBanner setViews(List<?> imageUrls) {
         this.imageUrls = imageUrls;
         this.count = imageUrls.size();
         return this;
@@ -261,7 +258,7 @@ public class Banner extends FrameLayout implements OnPageChangeListener {
 
     public void update(List<?> imageUrls) {
         this.imageUrls.clear();
-        this.imageViews.clear();
+        this.itemViews.clear();
         this.indicatorImages.clear();
         this.imageUrls.addAll(imageUrls);
         this.count = this.imageUrls.size();
@@ -279,10 +276,11 @@ public class Banner extends FrameLayout implements OnPageChangeListener {
         start();
     }
 
-    public Banner start() {
+    public HBanner start() {
+        checkLoader();
         setBannerStyleUI();
         setImageList(imageUrls);
-        setData();
+        setViewPagerViews();
         return this;
     }
 
@@ -309,24 +307,34 @@ public class Banner extends FrameLayout implements OnPageChangeListener {
         }
     }
 
+    /**
+     * 检查加载器是否设置，不设置则创建默认的加载器
+     */
+    private void checkLoader() {
+        if (imageLoader == null)
+            imageLoader = new ImageLoader();
+        if (videoLoader == null)
+            videoLoader = new VideoLoader();
+    }
+
     private void setBannerStyleUI() {
         int visibility = count > 1 ? View.VISIBLE : View.GONE;
         switch (bannerStyle) {
-            case BannerConfig.CIRCLE_INDICATOR:
+            case BannerStyle.CIRCLE_INDICATOR:
                 indicator.setVisibility(visibility);
                 break;
-            case BannerConfig.NUM_INDICATOR:
+            case BannerStyle.NUM_INDICATOR:
                 numIndicator.setVisibility(visibility);
                 break;
-            case BannerConfig.NUM_INDICATOR_TITLE:
+            case BannerStyle.NUM_INDICATOR_TITLE:
                 numIndicatorInside.setVisibility(visibility);
                 setTitleStyleUI();
                 break;
-            case BannerConfig.CIRCLE_INDICATOR_TITLE:
+            case BannerStyle.CIRCLE_INDICATOR_TITLE:
                 indicator.setVisibility(visibility);
                 setTitleStyleUI();
                 break;
-            case BannerConfig.CIRCLE_INDICATOR_TITLE_INSIDE:
+            case BannerStyle.CIRCLE_INDICATOR_TITLE_INSIDE:
                 indicatorInside.setVisibility(visibility);
                 setTitleStyleUI();
                 break;
@@ -334,22 +342,27 @@ public class Banner extends FrameLayout implements OnPageChangeListener {
     }
 
     private void initImages() {
-        imageViews.clear();
-        if (bannerStyle == BannerConfig.CIRCLE_INDICATOR ||
-                bannerStyle == BannerConfig.CIRCLE_INDICATOR_TITLE ||
-                bannerStyle == BannerConfig.CIRCLE_INDICATOR_TITLE_INSIDE) {
+        itemViews.clear();
+        if (bannerStyle == BannerStyle.CIRCLE_INDICATOR ||
+                bannerStyle == BannerStyle.CIRCLE_INDICATOR_TITLE ||
+                bannerStyle == BannerStyle.CIRCLE_INDICATOR_TITLE_INSIDE) {
             createIndicator();
-        } else if (bannerStyle == BannerConfig.NUM_INDICATOR_TITLE) {
+        } else if (bannerStyle == BannerStyle.NUM_INDICATOR_TITLE) {
             numIndicatorInside.setText("1/" + count);
-        } else if (bannerStyle == BannerConfig.NUM_INDICATOR) {
+        } else if (bannerStyle == BannerStyle.NUM_INDICATOR) {
             numIndicator.setText("1/" + count);
         }
     }
 
+    /**
+     * 设置显示内容列表
+     *
+     * @param imagesUrl
+     */
     private void setImageList(List<ViewItemBean> imagesUrl) {
         if (imagesUrl == null || imagesUrl.size() <= 0) {
             bannerDefaultImage.setVisibility(VISIBLE);
-            Log.e(tag, "The image data set is empty.");
+            Log.e(TAG, "The image data set is empty.");
             return;
         }
         bannerDefaultImage.setVisibility(GONE);
@@ -358,40 +371,30 @@ public class Banner extends FrameLayout implements OnPageChangeListener {
             ViewItemBean itemBean = null;
             if (i == 0) {
                 itemBean = imagesUrl.get(count - 1);//实际第一张放置最后一张图片
-                if (getItemTypeIsVideo(itemBean)) {
+                if (itemBean.getType() == BannerConfig.VIDEO) {
                     //如果最后一张是视频 插一张黑图片
-                    setViewByLoader(new ViewItemBean(), false);
+                    setViewByLoader(new ViewItemBean());
                     continue;
                 }
             } else if (i == count + 1) {
                 itemBean = imagesUrl.get(0);//实际最后一张放置第一张图片
-                if (getItemTypeIsVideo(itemBean)) {
+                if (itemBean.getType() == BannerConfig.VIDEO) {
                     //如果第一张是视频 插一张黑图片
-                    setViewByLoader(new ViewItemBean(), false);
+                    setViewByLoader(new ViewItemBean());
                     return;
                 }
             } else {
                 itemBean = imagesUrl.get(i - 1);
             }
-            setViewByLoader(itemBean, getItemTypeIsVideo(itemBean));
+            setViewByLoader(itemBean);
         }
-    }
-
-    //获取子项目类型 是否是视频
-    private boolean getItemTypeIsVideo(ViewItemBean itemBean) {
-        Object url = itemBean.getUrl();
-        boolean isVideo = false;
-        if (url instanceof String) {
-            File file = new File((String) url);
-            isVideo = FileTypeUtil.isVideoFile(file.getName());
-        }
-        return isVideo;
     }
 
     //加载子视图
-    private void setViewByLoader(ViewItemBean viewItemBean, boolean isVideo) {
+    private void setViewByLoader(ViewItemBean viewItemBean) {
         Object url = viewItemBean.getUrl();
         int time = viewItemBean.getTime();
+        boolean isVideo = viewItemBean.getType() == BannerConfig.VIDEO;
         View v = null;
         ViewLoaderInterface loader = isVideo ? videoLoader : imageLoader;
         if (loader != null) {
@@ -401,12 +404,8 @@ public class Banner extends FrameLayout implements OnPageChangeListener {
             v = isVideo ? new VideoView(context) : new ImageView(context);
         }
         setScaleType(v);
-        ViewItem viewItem = new ViewItem(v, time);
-        imageViews.add(viewItem);
-        if (loader != null)
-            loader.displayView(context, url, v);// 绑定地址显示
-        else
-            Log.e(tag, "Please set images&videos loader.");
+        ViewItem viewItem = new ViewItem(v, viewItemBean);
+        itemViews.add(viewItem);
     }
 
     private void setScaleType(View imageView) {
@@ -458,16 +457,16 @@ public class Banner extends FrameLayout implements OnPageChangeListener {
                 imageView.setImageResource(mIndicatorUnselectedResId);
             }
             indicatorImages.add(imageView);
-            if (bannerStyle == BannerConfig.CIRCLE_INDICATOR ||
-                    bannerStyle == BannerConfig.CIRCLE_INDICATOR_TITLE)
+            if (bannerStyle == BannerStyle.CIRCLE_INDICATOR ||
+                    bannerStyle == BannerStyle.CIRCLE_INDICATOR_TITLE)
                 indicator.addView(imageView, params);
-            else if (bannerStyle == BannerConfig.CIRCLE_INDICATOR_TITLE_INSIDE)
+            else if (bannerStyle == BannerStyle.CIRCLE_INDICATOR_TITLE_INSIDE)
                 indicatorInside.addView(imageView, params);
         }
     }
 
 
-    private void setData() {
+    private void setViewPagerViews() {
         currentItem = 1;
         if (adapter == null) {
             adapter = new BannerPagerAdapter();
@@ -545,7 +544,7 @@ public class Banner extends FrameLayout implements OnPageChangeListener {
 
         @Override
         public int getCount() {
-            return imageViews.size();
+            return itemViews.size();
         }
 
         @Override
@@ -555,41 +554,36 @@ public class Banner extends FrameLayout implements OnPageChangeListener {
 
         @Override
         public Object instantiateItem(ViewGroup container, final int position) {
-            container.addView(imageViews.get(position).getView());
-            View view = imageViews.get(position).getView();
-            if (bannerListener != null) {
-                view.setOnClickListener(new OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Log.e(tag, "你正在使用旧版点击事件接口，下标是从1开始，" +
-                                "为了体验请更换为setOnBannerListener，下标从0开始计算");
-                        bannerListener.OnBannerClick(position);
-                    }
+            Log.e("lake", "instantiateItem: " + position);
+            ViewItem item = itemViews.get(position);
+            View view = item.getView();
+            container.addView(view);
+            if (listener != null) {
+                view.setOnClickListener(v -> {
+                    listener.OnBannerClick(toRealPosition(position));
                 });
             }
-            if (listener != null) {
-                view.setOnClickListener(new OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        listener.OnBannerClick(toRealPosition(position));
-                    }
-                });
+            if (view instanceof VideoView) {
+                videoLoader.onPrepared(context, item.getUrl(), (VideoView) view);
+            }
+            if (view instanceof ImageView) {
+                imageLoader.onPrepared(context, item.getUrl(), view);
             }
             return view;
         }
 
         @Override
         public void destroyItem(ViewGroup container, int position, Object object) {
+            Log.e("lake", "destroyItem: " + position);
             View item = (View) object;
-            if (item instanceof VideoView) {
-                VideoView video = (VideoView) item;
-                if (video.isPlaying()) {
-                    video.stopPlayback();
-                }
-            }
             container.removeView(item);
+            if (item instanceof VideoView) {
+                videoLoader.onDestroy((VideoView) item);
+            }
+            if (item instanceof ImageView) {
+                imageLoader.onDestroy(item);
+            }
         }
-
     }
 
     @Override
@@ -599,17 +593,11 @@ public class Banner extends FrameLayout implements OnPageChangeListener {
         }
         switch (state) {
             case 0://No operation
+            case 1://start Sliding
                 if (currentItem == 0) {//第一张图片
                     viewPager.setCurrentItem(count, false);
                 } else if (currentItem == count + 1) {
                     viewPager.setCurrentItem(1, false);
-                }
-                break;
-            case 1://start Sliding
-                if (currentItem == count + 1) {//最后一张图片
-                    viewPager.setCurrentItem(1, false);
-                } else if (currentItem == 0) {
-                    viewPager.setCurrentItem(count, false);
                 }
                 break;
             case 2://end Sliding
@@ -626,19 +614,31 @@ public class Banner extends FrameLayout implements OnPageChangeListener {
 
     @Override
     public void onPageSelected(int position) {
+        Log.e("lake", "onPageSelected: " + position);
+        if (lastItem != position) {
+            ViewItem v = itemViews.get(lastItem);
+            View view = v.getView();
+            if (view instanceof VideoView) {
+                videoLoader.onStop((VideoView) view);
+            }
+        }
+        lastItem = position;
+
         currentItem = position;
         if (mOnPageChangeListener != null) {
             mOnPageChangeListener.onPageSelected(toRealPosition(position));
         }
-        stopVideoItem();
-        ViewItem v = imageViews.get(currentItem);
-        if (v.getView() instanceof VideoView) {
-            initVideoItem(v);
+
+        ViewItem v = itemViews.get(position);
+        View view = v.getView();
+        if (view instanceof VideoView) {
+            videoLoader.displayView(context, (VideoView) view);
         }
         delayTime = v.getTime();
-        if (bannerStyle == BannerConfig.CIRCLE_INDICATOR ||
-                bannerStyle == BannerConfig.CIRCLE_INDICATOR_TITLE ||
-                bannerStyle == BannerConfig.CIRCLE_INDICATOR_TITLE_INSIDE) {
+
+        if (bannerStyle == BannerStyle.CIRCLE_INDICATOR ||
+                bannerStyle == BannerStyle.CIRCLE_INDICATOR_TITLE ||
+                bannerStyle == BannerStyle.CIRCLE_INDICATOR_TITLE_INSIDE) {
             indicatorImages.get((lastPosition - 1 + count) % count).setImageResource(mIndicatorUnselectedResId);
             indicatorImages.get((position - 1 + count) % count).setImageResource(mIndicatorSelectedResId);
             lastPosition = position;
@@ -646,55 +646,29 @@ public class Banner extends FrameLayout implements OnPageChangeListener {
         if (position == 0) position = count;
         if (position > count) position = 1;
         switch (bannerStyle) {
-            case BannerConfig.CIRCLE_INDICATOR:
+            case BannerStyle.CIRCLE_INDICATOR:
                 break;
-            case BannerConfig.NUM_INDICATOR:
+            case BannerStyle.NUM_INDICATOR:
                 numIndicator.setText(position + "/" + count);
                 break;
-            case BannerConfig.NUM_INDICATOR_TITLE:
+            case BannerStyle.NUM_INDICATOR_TITLE:
                 numIndicatorInside.setText(position + "/" + count);
                 bannerTitle.setText(titles.get(position - 1));
                 break;
-            case BannerConfig.CIRCLE_INDICATOR_TITLE:
+            case BannerStyle.CIRCLE_INDICATOR_TITLE:
                 bannerTitle.setText(titles.get(position - 1));
                 break;
-            case BannerConfig.CIRCLE_INDICATOR_TITLE_INSIDE:
+            case BannerStyle.CIRCLE_INDICATOR_TITLE_INSIDE:
                 bannerTitle.setText(titles.get(position - 1));
                 break;
         }
-
-    }
-
-    private void stopVideoItem() {
-        if (currentVideoView != null && currentVideoView.isPlaying()) {
-            currentVideoView.stopPlayback();
-        }
-    }
-
-    //视频子视图开启
-    private void initVideoItem(ViewItem v) {
-        currentVideoView = ((VideoView) v.getView());
-        currentVideoView.setOnCompletionListener(m -> {
-            currentVideoView.seekTo(0);
-            currentVideoView.start();
-        });
-        currentVideoView.seekTo(0);
-        currentVideoView.start();
-    }
-
-    @Deprecated
-    public Banner setOnBannerClickListener(OnBannerClickListener listener) {
-        this.bannerListener = listener;
-        return this;
     }
 
     /**
-     * 废弃了旧版接口，新版的接口下标是从1开始，同时解决下标越界问题
-     *
      * @param listener
      * @return
      */
-    public Banner setOnBannerListener(OnBannerListener listener) {
+    public HBanner setOnBannerListener(OnBannerListener listener) {
         this.listener = listener;
         return this;
     }
