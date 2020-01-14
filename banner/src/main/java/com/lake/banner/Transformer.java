@@ -1,6 +1,6 @@
 package com.lake.banner;
 
-import android.support.v4.view.ViewPager.PageTransformer;
+import androidx.viewpager.widget.ViewPager.PageTransformer;
 
 import com.lake.banner.transformer.AccordionTransformer;
 import com.lake.banner.transformer.BackgroundToForegroundTransformer;

@@ -2,9 +2,13 @@ package com.lake.banner;
 
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.support.annotation.IntRange;
-import android.support.v4.view.PagerAdapter;
-import android.support.v4.view.ViewPager;
+
+import androidx.annotation.IntRange;
+import androidx.viewpager.widget.PagerAdapter;
+import androidx.viewpager.widget.ViewPager;
+
+import android.net.Uri;
+import android.provider.MediaStore;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -21,6 +25,7 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.VideoView;
+
 import com.lake.banner.listener.OnBannerListener;
 import com.lake.banner.loader.ImageLoader;
 import com.lake.banner.loader.VideoLoader;
@@ -28,12 +33,22 @@ import com.lake.banner.loader.VideoViewLoaderInterface;
 import com.lake.banner.loader.ViewItem;
 import com.lake.banner.loader.ViewItemBean;
 import com.lake.banner.loader.ViewLoaderInterface;
+import com.lake.banner.net.HttpCallback;
+import com.lake.banner.net.HttpClient;
+import com.lake.banner.net.HttpParam;
+import com.lake.banner.net.HttpThreadPool;
+import com.lake.banner.uitls.Constants;
+import com.lake.banner.uitls.MD5Util;
 import com.lake.banner.view.BannerViewPager;
+
+import java.io.File;
 import java.lang.reflect.Field;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import static android.support.v4.view.ViewPager.OnPageChangeListener;
-import static android.support.v4.view.ViewPager.PageTransformer;
+
+import static androidx.viewpager.widget.ViewPager.OnPageChangeListener;
+import static androidx.viewpager.widget.ViewPager.PageTransformer;
 
 public class HBanner extends FrameLayout implements OnPageChangeListener {
     public static final String TAG = HBanner.class.getSimpleName();
@@ -47,6 +62,7 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
     private int scrollTime = BannerConfig.DURATION;
     private boolean isAutoPlay = BannerConfig.IS_AUTO_PLAY;
     private boolean isScroll = BannerConfig.IS_SCROLL;
+    private boolean isCache = true;
     private int mIndicatorSelectedResId = R.drawable.gray_radius;
     private int mIndicatorUnselectedResId = R.drawable.white_radius;
     private int mLayoutResId = R.layout.banner;
@@ -238,6 +254,12 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
         return this;
     }
 
+    //cache video and image
+    public HBanner setCache(boolean cache) {
+        this.isCache = cache;
+        return this;
+    }
+
     public HBanner setViewPagerIsScroll(boolean isScroll) {
         this.isScroll = isScroll;
         return this;
@@ -277,6 +299,7 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
     }
 
     public HBanner start() {
+        checkCache(imageUrls);
         checkLoader();
         setBannerStyleUI();
         setImageList(imageUrls);
@@ -305,6 +328,57 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
             bannerTitle.setVisibility(View.VISIBLE);
             titleView.setVisibility(View.VISIBLE);
         }
+    }
+
+    /**
+     * 缓存视频
+     */
+    private void checkCache(List<ViewItemBean> list) {
+        //先实现缓存视频
+        if (isCache && list.size() != 0) {
+            for (ViewItemBean bean : list) {
+                if (bean.getType() == BannerConfig.VIDEO) {
+                    if (bean.getUrl() instanceof Uri) {
+                        Uri uri = (Uri) bean.getUrl();
+                        String pStr = uri.toString();
+                        String type = pStr.substring(pStr.lastIndexOf("."));
+                        String cacheFilePath = MD5Util.md5(pStr);
+                        Log.e(TAG, "checkCache: " + cacheFilePath + type);
+                        File file = new File(Constants.DEFAULT_DOWNLOAD_DIR + File.separator + cacheFilePath + type);
+                        if (!file.exists()) {
+                            cacheVideo(uri.toString(), file);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void cacheVideo(String url, File file) {
+        HttpThreadPool.getInstance().post(() -> {
+            HttpParam httpParam = new HttpParam(url);
+            httpParam.setFileName(file.getName());
+            httpParam.setFile(file);
+            httpParam.setSavePath(Constants.DEFAULT_DOWNLOAD_DIR);
+            HttpClient.getInstance().Get(httpParam, new HttpCallback.ProgressRequestHttpCallback<File>() {
+                @Override
+                public void success(File result) {
+                    Log.e("lake", "success: " + result.getName());
+                }
+
+                @Override
+                public void failed(String Msg) {
+                    Log.e("lake", "failed: ");
+                    if (file.exists())
+                        file.delete();
+                }
+
+                @Override
+                public void progress(float progress, float count) {
+                    Log.e("lake", "progress: " + progress + "/" + count);
+                }
+            });
+        });
     }
 
     /**
