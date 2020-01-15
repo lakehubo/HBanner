@@ -11,7 +11,16 @@
 2.视频加载模式从饿汉式改为了懒汉式。
 3.目前视频播放器采用的VideoView原生控件，所以支持的视频格式有限，推荐限定视频格式为mp4
 
-使用方式
+## 使用方式
+
+##### 权限说明
+>在线视频的播放以及缓存需要相应的网络权限和存储器的读写权限，请在相应应用里添加以下权限，并动态申请
+
+```xml
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+```
 
 ```android
    List<ViewItemBean> list = new ArrayList<>();
