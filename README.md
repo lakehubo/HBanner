@@ -21,7 +21,7 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 ```
-
+>简单使用hbanner
 ```android
    List<ViewItemBean> list = new ArrayList<>();
    Uri path1 = Uri.parse("https://v-cdn.zjol.com.cn/280443.mp4");
