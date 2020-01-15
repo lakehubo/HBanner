@@ -5,3 +5,27 @@
 作者开源项目地址https://github.com/youth5201314/banner
 
 我在他的项目上做了一些更改，新增了上下切换动画，以及视频图片可以混合并且可自定义设置每个子视图显示的时间
+
+##### 目前已优化项
+>1.目前新增了在线视频缓存功能，当传入的地址对象为uri类型时，将对该地址的视频是否下载到本地进行判断，默认会进行缓存并优先读取本地视频进行轮播，若为本地视频，请用string对象。
+2.视频加载模式从饿汉式改为了懒汉式。
+3.目前视频播放器采用的VideoView原生控件，所以支持的视频格式有限，推荐限定视频格式为mp4
+
+使用方式
+
+```android
+   List<ViewItemBean> list = new ArrayList<>();
+   Uri path1 = Uri.parse("https://v-cdn.zjol.com.cn/280443.mp4");
+   Uri path2 = Uri.parse("https://v-cdn.zjol.com.cn/276982.mp4");
+   list.add(new ViewItemBean(VIDEO, path1, 15 * 1000));
+   list.add(new ViewItemBean(IMAGE, R.mipmap.b3, 2 * 1000));
+   list.add(new ViewItemBean(VIDEO, path2, 15 * 1000));
+   list.add(new ViewItemBean(IMAGE, R.mipmap.b1, 2 * 1000));
+   list.add(new ViewItemBean(IMAGE, R.mipmap.b2, 2 * 1000));
+
+   banner.setViews(list)
+         .setBannerAnimation(DefaultTransformer.class)
+         .setBannerStyle(BannerStyle.NUM_INDICATOR)
+         .setCache(true)//可以不用设置，默认为true 目前只做了视频缓存
+         .start();
+```
