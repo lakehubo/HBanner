@@ -21,6 +21,15 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 ```
+>Gradle 依赖添加
+```xml
+    dependencies {
+        implementation 'com.lakehubo:hbanner:1.0.0'
+        ...
+    }
+    
+```
+
 >简单使用hbanner
 ```android
     List<ViewItemBean> list = new ArrayList<>();
