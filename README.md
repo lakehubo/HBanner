@@ -46,5 +46,5 @@
           .setBannerAnimation(DefaultTransformer.class)
           .setBannerStyle(BannerStyle.NUM_INDICATOR)
           .setCache(true)//可以不用设置，默认为true
-           .start();
+          .start();
 ```
