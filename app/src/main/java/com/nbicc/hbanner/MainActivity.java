@@ -60,9 +60,9 @@ public class MainActivity extends AppCompatActivity {
          * 视频图片混播
          */
         List<ViewItemBean> list = new ArrayList<>();
-        Uri path1 = Uri.parse("http://221.12.125.147:8092/files/b79f4e5a-5eb5-4838-a083-a11076754453.mp4");
-        Uri path2 = Uri.parse("http://221.12.125.147:8092/files/37efc33a-92b0-4d19-a27f-a39af63ad8a0.mp4");
-        Uri imageUrl = Uri.parse("http://221.12.125.147:8092/files/14a27ccf-ff5d-4287-a041-1846c0df1a7d.jpg");
+        Uri path1 = Uri.parse("https://v-cdn.zjol.com.cn/123468.mp4");
+        Uri path2 = Uri.parse("https://v-cdn.zjol.com.cn/276982.mp4");
+        Uri imageUrl = Uri.parse("https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1579170629919&di=fc03a214795a764b4094aba86775fb8f&imgtype=jpg&src=http%3A%2F%2Fimg4.imgtn.bdimg.com%2Fit%2Fu%3D4061015229%2C3374626956%26fm%3D214%26gp%3D0.jpg");
         list.add(new ViewItemBean(VIDEO, path1, 15 * 1000));
         list.add(new ViewItemBean(IMAGE, imageUrl, 2 * 1000));
         list.add(new ViewItemBean(VIDEO, path2, 15 * 1000));

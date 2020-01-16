@@ -1,0 +1,121 @@
+apply plugin: 'com.android.library'
+apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: 'com.jfrog.bintray'
+version = "1.0.0"
+
+android {
+    compileSdkVersion 28
+    defaultConfig {
+        minSdkVersion 23
+        targetSdkVersion 28
+        versionCode 1
+        versionName version
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    lintOptions {
+        abortOnError false
+    }
+    compileOptions {
+        sourceCompatibility = '1.8'
+        targetCompatibility = '1.8'
+    }
+}
+
+dependencies {
+    compileOnly fileTree(dir: 'libs', include: ['*.jar'])
+    compileOnly 'androidx.appcompat:appcompat:1.1.0'
+    compileOnly 'androidx.legacy:legacy-support-v4:1.0.0'
+    compileOnly 'com.google.code.gson:gson:2.8.6'
+}
+
+
+//发布到组织名称名字，必须填写
+group = "com.lakehubo.maven"
+//发布到JCenter上的项目名字，必须填写
+def libName = "hbanner"
+// 版本号，下次更新是只需要更改版本号即可
+version = "1.0.0"
+
+//生成源文件
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+
+//生成文档
+task javadoc(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    options.encoding "UTF-8"
+    options.charSet 'UTF-8'
+    options.author true
+    options.version true
+    failOnError false
+}
+
+//文档打包成jar
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+//拷贝javadoc文件
+task copyDoc(type: Copy) {
+    from "${buildDir}/docs/"
+    into "docs"
+}
+
+//上传到jcenter所需要的源码文件
+artifacts {
+    archives javadocJar
+    archives sourcesJar
+}
+
+// 配置maven库，生成POM.xml文件
+install {
+    repositories.mavenInstaller {
+        // This generates POM.xml with proper parameters
+        pom {
+            project {
+                packaging 'aar'
+                name 'This is video image mix banner sdk'
+                licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id 'lakehubo'
+                        name 'Lake'
+                        email 'huboa1234@126.com'
+                    }
+                }
+            }
+        }
+    }
+}
+
+//上传到jcenter
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+bintray {
+    user = properties.getProperty("bintray.user")    //读取 local.properties 文件里面的 bintray.user
+    key = properties.getProperty("bintray.apikey")   //读取 local.properties 文件里面的 bintray.apikey
+    configurations = ['archives']
+    pkg {
+        userOrg = "lakehubo"
+        repo = "maven"
+        name = libName    //发布到JCenter上的项目名字，必须填写
+        desc = 'video and image mix banner'    //项目描述
+        licenses = ["Apache-2.0"]
+        publish = true
+    }
+}
+
+
