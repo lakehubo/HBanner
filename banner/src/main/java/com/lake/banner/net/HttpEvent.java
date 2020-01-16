@@ -3,9 +3,11 @@ package com.lake.banner.net;
 import android.os.Environment;
 import android.text.TextUtils;
 import android.util.Log;
+
 import com.google.gson.Gson;
 import com.lake.banner.uitls.Constants;
 import com.lake.banner.uitls.ParameterizedTypeUtil;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -67,6 +69,7 @@ public abstract class HttpEvent {
             long webTime = conn.getDate();
             if (timeRequestHttpCallback != null)
                 timeRequestHttpCallback.onTimeInfo(webTime);
+            Log.e("lake", "httpRequest: " + conn.getResponseCode());
             if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
                 T r = getResultType(conn, param, callback);
                 callback.success(r);

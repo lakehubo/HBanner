@@ -2,6 +2,7 @@ package com.lake.banner.loader;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.util.Log;
 import android.widget.VideoView;
@@ -25,6 +26,10 @@ public class VideoLoader implements VideoViewLoaderInterface {
     public void onPrepared(Context context, Object path, VideoView videoView) {
         try {
             videoView.setBackgroundColor(Color.TRANSPARENT);
+            videoView.setOnErrorListener((MediaPlayer mp, int what, int extra) -> {
+                //视频读取失败！
+                return true;
+            });
             if (path instanceof String) {
                 videoView.setVideoPath((String) path);
             } else if (path instanceof Uri) {

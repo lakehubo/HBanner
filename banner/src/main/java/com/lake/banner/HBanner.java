@@ -331,30 +331,28 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
     }
 
     /**
-     * 缓存视频
+     * 缓存网络视频和网络图片
      */
     private void checkCache(List<ViewItemBean> list) {
-        //先实现缓存视频
+        //缓存视频和图片
         if (isCache && list.size() != 0) {
             for (ViewItemBean bean : list) {
-                if (bean.getType() == BannerConfig.VIDEO) {
-                    if (bean.getUrl() instanceof Uri) {
-                        Uri uri = (Uri) bean.getUrl();
-                        String pStr = uri.toString();
-                        String type = pStr.substring(pStr.lastIndexOf("."));
-                        String cacheFilePath = MD5Util.md5(pStr);
-                        Log.e(TAG, "checkCache: " + cacheFilePath + type);
-                        File file = new File(Constants.DEFAULT_DOWNLOAD_DIR + File.separator + cacheFilePath + type);
-                        if (!file.exists()) {
-                            cacheVideo(uri.toString(), file);
-                        }
+                if (bean.getUrl() instanceof Uri) {
+                    Uri uri = (Uri) bean.getUrl();
+                    String pStr = uri.toString();
+                    String type = pStr.substring(pStr.lastIndexOf("."));
+                    String cacheFilePath = MD5Util.md5(pStr);
+                    Log.e("lake", "checkCache: " + cacheFilePath + type);
+                    File file = new File(Constants.DEFAULT_DOWNLOAD_DIR + File.separator + cacheFilePath + type);
+                    if (!file.exists()) {
+                        cacheFile(uri.toString(), file);
                     }
                 }
             }
         }
     }
 
-    private void cacheVideo(String url, File file) {
+    private void cacheFile(String url, File file) {
         HttpThreadPool.getInstance().post(() -> {
             HttpParam httpParam = new HttpParam(url);
             httpParam.setFileName(file.getName());
@@ -375,7 +373,8 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
 
                 @Override
                 public void progress(float progress, float count) {
-                    Log.e("lake", "progress: " + progress + "/" + count);
+                    float percent = progress / count * 100;
+                    Log.e("lake", "progress: " + String.format("%.2f", percent) + "%");
                 }
             });
         });
