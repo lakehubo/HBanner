@@ -5,10 +5,13 @@ import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.util.Log;
+import android.widget.ImageView;
 import android.widget.VideoView;
 
+import com.lake.banner.BannerGravity;
 import com.lake.banner.uitls.Constants;
 import com.lake.banner.uitls.MD5Util;
+import com.lake.banner.view.CustomVideoView;
 
 import java.io.File;
 
@@ -16,15 +19,25 @@ import java.io.File;
  * 视频代理实现
  */
 public class VideoLoader implements VideoViewLoaderInterface {
+    private int gravity = BannerGravity.CENTER;
+
+    public VideoLoader() {
+    }
+
+    public VideoLoader(int gravity) {
+        this.gravity = gravity;
+    }
 
     @Override
     public VideoView createView(Context context) {
-        return new VideoView(context);
+        //全屏拉伸 CustomVideoView(context)；
+        return new CustomVideoView(context);
     }
 
     @Override
     public void onPrepared(Context context, Object path, VideoView videoView) {
         try {
+            ((CustomVideoView)videoView).setGravityType(gravity);
             videoView.setBackgroundColor(Color.TRANSPARENT);
             videoView.setOnErrorListener((MediaPlayer mp, int what, int extra) -> {
                 //视频读取失败！

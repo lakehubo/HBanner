@@ -13,6 +13,7 @@ import androidx.core.content.ContextCompat;
 import android.os.Bundle;
 import android.widget.Toast;
 
+import com.lake.banner.BannerGravity;
 import com.lake.banner.HBanner;
 import com.lake.banner.BannerStyle;
 import com.lake.banner.loader.ViewItemBean;
@@ -73,6 +74,7 @@ public class MainActivity extends AppCompatActivity {
                 .setBannerAnimation(DefaultTransformer.class)
                 .setBannerStyle(BannerStyle.NUM_INDICATOR)
                 .setCache(true)//可以不用设置，默认为true
+                .setViewGravity(BannerGravity.CENTER)
                 .start();
     }
 

@@ -3,12 +3,12 @@ package com.lake.banner;
 import android.content.Context;
 import android.content.res.TypedArray;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.IntRange;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 import android.net.Uri;
-import android.provider.MediaStore;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -22,6 +22,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.VideoView;
@@ -42,8 +43,9 @@ import com.lake.banner.uitls.MD5Util;
 import com.lake.banner.view.BannerViewPager;
 
 import java.io.File;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Field;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -63,6 +65,7 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
     private boolean isAutoPlay = BannerConfig.IS_AUTO_PLAY;
     private boolean isScroll = BannerConfig.IS_SCROLL;
     private boolean isCache = true;
+    private int viewGravity = BannerGravity.CENTER;
     private int mIndicatorSelectedResId = R.drawable.gray_radius;
     private int mIndicatorUnselectedResId = R.drawable.white_radius;
     private int mLayoutResId = R.layout.banner;
@@ -260,6 +263,17 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
         return this;
     }
 
+    @IntDef({BannerGravity.CENTER, BannerGravity.CENTER_HORIZONTAL,BannerGravity.FULL_SCREEN})
+    @Retention(RetentionPolicy.SOURCE)
+    private @interface subViewGravity {
+    }
+
+    //子视图显示位置
+    public HBanner setViewGravity(@subViewGravity int gravity) {
+        this.viewGravity = gravity;
+        return this;
+    }
+
     public HBanner setViewPagerIsScroll(boolean isScroll) {
         this.isScroll = isScroll;
         return this;
@@ -385,9 +399,9 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
      */
     private void checkLoader() {
         if (imageLoader == null)
-            imageLoader = new ImageLoader();
+            imageLoader = new ImageLoader(viewGravity);
         if (videoLoader == null)
-            videoLoader = new VideoLoader();
+            videoLoader = new VideoLoader(viewGravity);
     }
 
     private void setBannerStyleUI() {
@@ -631,6 +645,7 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
             ViewItem item = itemViews.get(position);
             View view = item.getView();
             container.addView(view);
+
             if (listener != null) {
                 view.setOnClickListener(v -> {
                     listener.OnBannerClick(toRealPosition(position));

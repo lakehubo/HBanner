@@ -29,17 +29,17 @@ android {
 dependencies {
     compileOnly fileTree(dir: 'libs', include: ['*.jar'])
     compileOnly 'androidx.appcompat:appcompat:1.1.0'
-    compileOnly 'androidx.legacy:legacy-support-v4:1.0.0'
-    compileOnly 'com.google.code.gson:gson:2.8.6'
+    api 'com.google.code.gson:gson:2.8.6'
 }
 
-
+def siteUrl = 'https://github.com/lakehubo/HBanner' // 项目的主页
+def gitUrl = 'https://github.com/lakehubo/HBanner.git' // Git仓库的url
 //发布到组织名称名字，必须填写
-group = "com.lakehubo.maven"
+group = "com.lakehubo"
 //发布到JCenter上的项目名字，必须填写
 def libName = "hbanner"
 // 版本号，下次更新是只需要更改版本号即可
-version = "1.0.0"
+version = "1.0.1"
 
 //生成源文件
 task sourcesJar(type: Jar) {
@@ -92,9 +92,14 @@ install {
                 developers {
                     developer {
                         id 'lakehubo'
-                        name 'Lake'
+                        name 'hubo'
                         email 'huboa1234@126.com'
                     }
+                }
+                scm {
+                    connection gitUrl
+                    developerConnection gitUrl
+                    url siteUrl
                 }
             }
         }
@@ -113,6 +118,7 @@ bintray {
         repo = "maven"
         name = libName    //发布到JCenter上的项目名字，必须填写
         desc = 'video and image mix banner'    //项目描述
+        vcsUrl = gitUrl
         licenses = ["Apache-2.0"]
         publish = true
     }
