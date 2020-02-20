@@ -24,7 +24,7 @@
 >Gradle 依赖添加
 ```xml
     dependencies {
-        implementation 'com.lakehubo:hbanner:1.0.0'
+        implementation 'com.lakehubo:hbanner:1.0.1'
         ...
     }
     
@@ -46,5 +46,15 @@
           .setBannerAnimation(DefaultTransformer.class)
           .setBannerStyle(BannerStyle.NUM_INDICATOR)
           .setCache(true)//可以不用设置，默认为true
+          .setViewGravity(BannerGravity.CENTER)
           .start();
 ```
+##### 版本1.0.1
+>更新内容：
+1.新增图片/视频居中或者拉伸布局设置
+```
+BannerGravity.CENTER 居中
+BannerGravity.CENTER_HORIZONTAL 垂直居中
+BannerGravity.FULL_SCREEN 全屏
+```
+
