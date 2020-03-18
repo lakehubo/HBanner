@@ -12,4 +12,5 @@ public interface VideoViewLoaderInterface extends ViewLoaderInterface<VideoView>
 
     void onStop(VideoView view);
 
+    void onResume(VideoView view);
 }

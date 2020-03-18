@@ -69,6 +69,11 @@ public class VideoLoader implements VideoViewLoaderInterface {
     }
 
     @Override
+    public void onResume(VideoView view) {
+        view.start();
+    }
+
+    @Override
     public void onStop(VideoView view) {
         view.pause();
     }

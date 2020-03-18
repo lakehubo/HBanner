@@ -1,7 +1,6 @@
 package com.lake.banner.uitls;
 
 import android.os.Environment;
-
 import java.io.File;
 
 public class Constants {

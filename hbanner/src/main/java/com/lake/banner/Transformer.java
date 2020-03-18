@@ -1,7 +1,6 @@
 package com.lake.banner;
 
 import androidx.viewpager.widget.ViewPager.PageTransformer;
-
 import com.lake.banner.transformer.AccordionTransformer;
 import com.lake.banner.transformer.BackgroundToForegroundTransformer;
 import com.lake.banner.transformer.CubeInTransformer;
@@ -16,6 +15,7 @@ import com.lake.banner.transformer.RotateUpTransformer;
 import com.lake.banner.transformer.ScaleInOutTransformer;
 import com.lake.banner.transformer.StackTransformer;
 import com.lake.banner.transformer.TabletTransformer;
+import com.lake.banner.transformer.VerticalPageTransformer;
 import com.lake.banner.transformer.ZoomInTransformer;
 import com.lake.banner.transformer.ZoomOutSlideTransformer;
 import com.lake.banner.transformer.ZoomOutTranformer;
@@ -35,6 +35,7 @@ public class Transformer {
     public static Class<? extends PageTransformer> ScaleInOut = ScaleInOutTransformer.class;
     public static Class<? extends PageTransformer> Stack = StackTransformer.class;
     public static Class<? extends PageTransformer> Tablet = TabletTransformer.class;
+    public static Class<? extends PageTransformer> Vertical = VerticalPageTransformer.class;
     public static Class<? extends PageTransformer> ZoomIn = ZoomInTransformer.class;
     public static Class<? extends PageTransformer> ZoomOut = ZoomOutTranformer.class;
     public static Class<? extends PageTransformer> ZoomOutSlide = ZoomOutSlideTransformer.class;

@@ -16,6 +16,7 @@ public class ViewItem extends ViewItemBean {
 
     public void setViewItemBean(ViewItemBean bean) {
         this.type = bean.getType();
+        this.title = bean.getTitle();
         this.url = bean.getUrl();
         this.Time = bean.getTime();
     }
