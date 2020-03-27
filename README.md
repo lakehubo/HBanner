@@ -98,3 +98,41 @@ List<ViewItemBean> list = new ArrayList<>();
                 .start();
 ```
 
+* 关于使用自定义视频控件以及图片控件可以自行实现VideoViewLoaderInterface以及ViewLoaderInterface接口后，
+通过setVideoLoader(VideoViewLoaderInterface videoLoader)以及setImageLoader(ViewLoaderInterface imageLoader)
+方法实现替换
+```
+/**
+ * 例如自定义使用glide加载图片代理实现
+ */
+public class MyImageLoader implements ViewLoaderInterface<ImageView> {
+    private int gravity = BannerGravity.CENTER;
+
+    public ImageLoader() {
+    }
+
+    public ImageLoader(int gravity) {
+        this.gravity = gravity;
+    }
+
+    @Override
+    public ImageView createView(Context context) {
+        return new ImageView(context);
+    }
+
+    @Override//view预加载时候调用，并非正在显示
+    public void onPrepared(Context context, Object path, ImageView imageView) {
+        //Glide 加载图片简单用法
+        Glide.with(context).load(path).into(imageView);
+    }
+
+    @Override
+    public void onDestroy(ImageView imageView) {
+        System.gc();
+    }
+}
+
+banner.setImageLoader(new MyImageLoader());
+
+//替换视频控件同理  
+```
