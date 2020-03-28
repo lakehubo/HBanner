@@ -13,6 +13,8 @@
 * 4.新增图片视频子布局参数设置，居中，拉伸，垂直居中（1.0.1）
 * 5.支持手滑切换页面（1.0.2）
 * 6.优化标题的传入方式（1.0.2）
+* 7.新增控件生命周期重启和暂停的方法（1.0.3）
+* 8.新增缓存地址自定义，解决关闭缓存下网络图片无法显示问题（1.0.3）
 
 ## 使用方式
 
@@ -27,7 +29,7 @@
 >Gradle 依赖添加方式
 ```xml
     dependencies {
-        implementation 'com.lakehubo:hbanner:1.0.2'
+        implementation 'com.lakehubo:hbanner:1.0.3'
         ...
     }
     
@@ -37,7 +39,7 @@
 <dependency>
   <groupId>com.lakehubo</groupId>
   <artifactId>hbanner</artifactId>
-  <version>1.0.2</version>
+  <version>1.0.3</version>
   <type>pom</type>
 </dependency>
 ```
@@ -96,6 +98,34 @@ List<ViewItemBean> list = new ArrayList<>();
                 .setViewGravity(BannerGravity.CENTER)
                 .setViewPagerIsScroll(true)//支持手滑模式 默认为true
                 .start();
+```
+
+##### 版本1.0.3
+>更新内容：
+* 1.新增控件生命周期重启和暂停的方法
+* 2.新增缓存地址自定义，解决关闭缓存下网络图片无法显示问题
+```
+    //若需要指定缓存网络图片和网络视频资源的地址 请在banner.start()使用
+    banner.setCachePath(String path);
+
+    //在对应生命周期中添加以下方法
+    @Override
+    protected void onResume() {
+        super.onResume();
+        banner.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        banner.onPause();
+        super.onPause();
+    }
+
+    @Override
+    protected void onStop() {
+        banner.onStop();
+        super.onStop();
+    }
 ```
 
 * 关于使用自定义视频控件以及图片控件可以自行实现VideoViewLoaderInterface以及ViewLoaderInterface接口后，
