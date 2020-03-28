@@ -25,5 +25,5 @@ public class BannerConfig {
      */
     public static final int VIDEO = 0;
     public static final int IMAGE = 1;
-    public static final int NO_TIME_SET = -1;//不计时模式（适用于纯视频或者纯图片播放）
+    //public static final int NO_TIME_SET = -1;//不计时模式（适用于纯视频或者纯图片播放） 暂无实现
 }

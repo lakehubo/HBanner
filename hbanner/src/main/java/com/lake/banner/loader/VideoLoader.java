@@ -5,14 +5,11 @@ import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.util.Log;
-import android.widget.ImageView;
 import android.widget.VideoView;
-
 import com.lake.banner.BannerGravity;
 import com.lake.banner.uitls.Constants;
 import com.lake.banner.uitls.MD5Util;
 import com.lake.banner.view.CustomVideoView;
-
 import java.io.File;
 
 /**
@@ -64,22 +61,26 @@ public class VideoLoader implements VideoViewLoaderInterface {
 
     @Override
     public void displayView(Context context, VideoView videoView) {
+        Log.e("test", "displayView: ");
         videoView.seekTo(0);
         videoView.start();
     }
 
     @Override
     public void onResume(VideoView view) {
+        Log.e("test", "onResume: ");
         view.start();
     }
 
     @Override
     public void onStop(VideoView view) {
+        Log.e("test", "onStop: ");
         view.pause();
     }
 
     @Override
     public void onDestroy(VideoView videoView) {
+        Log.e("test", "onDestroy: ");
         videoView.stopPlayback();
         System.gc();
     }

@@ -2,11 +2,14 @@ package com.lake.banner;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+
 import androidx.annotation.IntDef;
 import androidx.annotation.IntRange;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
+
 import android.net.Uri;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -23,6 +26,7 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.VideoView;
+
 import com.lake.banner.listener.OnBannerListener;
 import com.lake.banner.loader.ImageLoader;
 import com.lake.banner.loader.VideoLoader;
@@ -37,12 +41,14 @@ import com.lake.banner.net.HttpThreadPool;
 import com.lake.banner.uitls.Constants;
 import com.lake.banner.uitls.MD5Util;
 import com.lake.banner.view.BannerViewPager;
+
 import java.io.File;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+
 import static androidx.viewpager.widget.ViewPager.OnPageChangeListener;
 import static androidx.viewpager.widget.ViewPager.PageTransformer;
 
@@ -58,6 +64,7 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
     private boolean isAutoPlay = BannerConfig.IS_AUTO_PLAY;
     private boolean isScroll = BannerConfig.IS_SCROLL;
     private boolean isCache = true;
+    private String cachePath = Constants.DEFAULT_DOWNLOAD_DIR;//缓存地址
     private boolean isShowTitle = false;//是否显示标题
     private int viewGravity = BannerGravity.CENTER;
     private int mIndicatorSelectedResId = R.drawable.gray_radius;
@@ -263,6 +270,18 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
         return this;
     }
 
+    /**
+     * 设置缓存地址
+     *
+     * @param path
+     * @return
+     */
+    public HBanner setCachePath(String path) {
+        if (!TextUtils.isEmpty(path))
+            this.cachePath = path;
+        return this;
+    }
+
     @IntDef({BannerGravity.CENTER, BannerGravity.CENTER_HORIZONTAL, BannerGravity.FULL_SCREEN})
     @Retention(RetentionPolicy.SOURCE)
     private @interface subViewGravity {
@@ -315,6 +334,27 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
         setViewPagerViews();
     }
 
+    public void onResume() {
+        if (isAutoPlay) {
+            if (currentDelayTime > 0)
+                startAutoPlay(currentDelayTime);
+            else
+                startAutoPlay();
+        }
+    }
+
+    public void onPause() {
+        if (isAutoPlay) {
+            stopAutoPlay();
+        }
+    }
+
+    public void onStop() {
+        if (isAutoPlay) {
+            currentDelayTime = subList.get(currentItem).getTime();
+        }
+    }
+
     /**
      * 设置标题样式
      */
@@ -340,15 +380,17 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
      */
     private void checkCache(List<ViewItemBean> list) {
         //缓存视频和图片
-        if (isCache && list.size() != 0) {
+        if (list.size() != 0) {
             for (ViewItemBean bean : list) {
                 if (bean.getUrl() instanceof Uri) {
+                    if (bean.getType() == BannerConfig.VIDEO && !isCache)
+                        continue;
                     Uri uri = (Uri) bean.getUrl();
                     String pStr = uri.toString();
                     String type = pStr.substring(pStr.lastIndexOf("."));
                     String cacheFilePath = MD5Util.md5(pStr);
                     Log.e("lake", "checkCache: " + cacheFilePath + type);
-                    File file = new File(Constants.DEFAULT_DOWNLOAD_DIR + File.separator + cacheFilePath + type);
+                    File file = new File(cachePath + File.separator + cacheFilePath + type);
                     if (!file.exists()) {
                         cacheFile(uri.toString(), file);
                     }
@@ -362,7 +404,7 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
             HttpParam httpParam = new HttpParam(url);
             httpParam.setFileName(file.getName());
             httpParam.setFile(file);
-            httpParam.setSavePath(Constants.DEFAULT_DOWNLOAD_DIR);
+            httpParam.setSavePath(cachePath);
             HttpClient.getInstance().Get(httpParam, new HttpCallback.ProgressRequestHttpCallback<File>() {
                 @Override
                 public void success(File result) {
@@ -525,7 +567,7 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
             startAutoPlay();
     }
 
-    public void startAutoPlay() {
+    private void startAutoPlay() {
         handler.removeCallbacks(task);
         int delayTime = subList.get(currentItem).getTime();
         changeTime = System.currentTimeMillis() + delayTime;
@@ -538,12 +580,18 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
      */
     private void startAutoPlay(int delayTime) {
         Log.e("auto", "startAutoPlay: " + delayTime);
+        startPositionVideoView(currentItem);
         handler.removeCallbacks(task);
         handler.postDelayed(task, delayTime);
     }
 
-    public void stopAutoPlay() {
+    private void stopAutoPlay() {
         Log.e("auto", "stopAutoPlay: ");
+        stopPositionVideoView(currentItem);
+        if (changeTime != 0) {
+            currentDelayTime = (int) (changeTime - System.currentTimeMillis());
+            Log.e("auto", "剩余延迟: " + currentDelayTime);
+        }
         handler.removeCallbacks(task);
     }
 
@@ -570,17 +618,8 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
         if (isAutoPlay) {
             int page = currentItem;
             int action = ev.getAction();
-            ViewItem v = subList.get(currentItem);
-            View view = v.getView();
             if (action == MotionEvent.ACTION_DOWN) {
-                if (view instanceof VideoView) {
-                    videoLoader.onStop((VideoView) view);
-                }
                 stopAutoPlay();
-                if (changeTime != 0) {
-                    currentDelayTime = (int) (changeTime - System.currentTimeMillis());
-                }
-                Log.e("auto", "剩余延迟: " + currentDelayTime);
             }
             super.dispatchTouchEvent(ev);//保证onPageSelected在up前执行
             if (action == MotionEvent.ACTION_UP
@@ -588,9 +627,6 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
                     || action == MotionEvent.ACTION_OUTSIDE) {
                 if (page == currentItem) {
                     Log.e("auto", "没切换画面");
-                    if (view instanceof VideoView) {
-                        videoLoader.onResume((VideoView) view);
-                    }
                     startAutoPlay(Math.max(0, currentDelayTime));
                 } else {
                     Log.e("auto", "切换了！");
@@ -691,13 +727,8 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
     @Override
     public void onPageSelected(int position) {
         Log.e("auto", "onPageSelected: " + position);
-        if (lastItem != position) {
-            ViewItem v = subList.get(lastItem);
-            View view = v.getView();
-            if (view instanceof VideoView) {
-                videoLoader.onStop((VideoView) view);
-            }
-        }
+        if (lastItem != position)
+            stopPositionVideoView(lastItem);
         lastItem = position;
 
         currentItem = position;
@@ -705,11 +736,7 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
             mOnPageChangeListener.onPageSelected(toRealPosition(position));
         }
 
-        ViewItem v = subList.get(position);
-        View view = v.getView();
-        if (view instanceof VideoView) {
-            videoLoader.displayView(context, (VideoView) view);
-        }
+        displayPositionVideoView(position);
 
         if (bannerStyle == BannerStyle.CIRCLE_INDICATOR ||
                 bannerStyle == BannerStyle.CIRCLE_INDICATOR_TITLE ||
@@ -734,6 +761,30 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
             case BannerStyle.CIRCLE_INDICATOR_TITLE_INSIDE:
                 bannerTitle.setText(subList.get(position - 1).getTitle());
                 break;
+        }
+    }
+
+    private void stopPositionVideoView(int position) {
+        ViewItem v = subList.get(position);
+        View view = v.getView();
+        if (view instanceof VideoView) {
+            videoLoader.onStop((VideoView) view);
+        }
+    }
+
+    private void startPositionVideoView(int position) {
+        ViewItem v = subList.get(position);
+        View view = v.getView();
+        if (view instanceof VideoView) {
+            videoLoader.onResume((VideoView) view);
+        }
+    }
+
+    private void displayPositionVideoView(int position) {
+        ViewItem v = subList.get(position);
+        View view = v.getView();
+        if (view instanceof VideoView) {
+            videoLoader.displayView(context, (VideoView) view);
         }
     }
 
