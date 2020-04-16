@@ -105,7 +105,7 @@ List<ViewItemBean> list = new ArrayList<>();
 * 1.新增控件生命周期重启和暂停的方法
 * 2.新增缓存地址自定义，解决关闭缓存下网络图片无法显示问题
 ```
-    //若需要指定缓存网络图片和网络视频资源的地址 请在banner.start()使用
+    //若需要指定缓存网络图片和网络视频资源的地址 请在banner.start()调用前使用
     banner.setCachePath(String path);
 
     //在对应生命周期中添加以下方法
