@@ -18,7 +18,7 @@ import static com.lake.banner.BannerConfig.VIDEO;
 public class MainActivity extends BaseActivity {
     private HBanner banner;
 
-    protected String[] NEEDED_PERMISSIONS = {
+    public String[] NEEDED_PERMISSIONS = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.INTERNET};
@@ -47,6 +47,8 @@ public class MainActivity extends BaseActivity {
         list = new ArrayList<>();
         Uri path1 = Uri.parse("https://v-cdn.zjol.com.cn/123468.mp4");
         Uri path2 = Uri.parse("https://v-cdn.zjol.com.cn/276982.mp4");
+//        Uri path1 = Uri.parse("android.resource://" + getPackageName() + "/"+ R.raw.default1);
+//        Uri path2 = Uri.parse("android.resource://" + getPackageName() + "/"+ R.raw.default2);
         Uri imageUrl = Uri.parse("https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1579170629919&di=fc03a214795a764b4094aba86775fb8f&imgtype=jpg&src=http%3A%2F%2Fimg4.imgtn.bdimg.com%2Fit%2Fu%3D4061015229%2C3374626956%26fm%3D214%26gp%3D0.jpg");
         list.add(new ViewItemBean(VIDEO, "标题1", path1, 15 * 1000));
         list.add(new ViewItemBean(IMAGE, "标题2", imageUrl, 2 * 1000));

@@ -16,25 +16,20 @@ import java.io.File;
  * 视频代理实现
  */
 public class VideoLoader implements VideoViewLoaderInterface {
-    private int gravity = BannerGravity.CENTER;
-
     public VideoLoader() {
     }
 
-    public VideoLoader(int gravity) {
-        this.gravity = gravity;
-    }
-
     @Override
-    public VideoView createView(Context context) {
+    public VideoView createView(Context context,int gravity) {
         //全屏拉伸 CustomVideoView(context)；
-        return new CustomVideoView(context);
+        CustomVideoView customVideoView = new CustomVideoView(context);
+        customVideoView.setGravityType(gravity);
+        return customVideoView;
     }
 
     @Override
-    public void onPrepared(Context context, Object path, VideoView videoView) {
+    public void onPrepared(Context context, Object path, VideoView videoView,String cachePath) {
         try {
-            ((CustomVideoView)videoView).setGravityType(gravity);
             videoView.setBackgroundColor(Color.TRANSPARENT);
             videoView.setOnErrorListener((MediaPlayer mp, int what, int extra) -> {
                 //视频读取失败！
@@ -45,7 +40,7 @@ public class VideoLoader implements VideoViewLoaderInterface {
             } else if (path instanceof Uri) {
                 String pStr = path.toString();
                 String type = pStr.substring(pStr.lastIndexOf("."));
-                File file = new File(Constants.DEFAULT_DOWNLOAD_DIR + File.separator + MD5Util.md5(path.toString()) + type);
+                File file = new File(cachePath + File.separator + MD5Util.md5(path.toString()) + type);
                 if (file.exists()) {
                     Log.e("lake", "onPrepared: isCache");
                     videoView.setVideoPath(file.getAbsolutePath());

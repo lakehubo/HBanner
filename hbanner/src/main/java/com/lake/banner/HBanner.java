@@ -432,9 +432,9 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
      */
     private void checkLoader() {
         if (imageLoader == null)
-            imageLoader = new ImageLoader(viewGravity);
+            imageLoader = new ImageLoader();
         if (videoLoader == null)
-            videoLoader = new VideoLoader(viewGravity);
+            videoLoader = new VideoLoader();
     }
 
     private void setBannerStyleUI() {
@@ -514,7 +514,7 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
         View v = null;
         ViewLoaderInterface loader = isVideo ? videoLoader : imageLoader;
         if (loader != null) {
-            v = loader.createView(context);
+            v = loader.createView(context, viewGravity);
         }
         if (v == null) {
             v = isVideo ? new VideoView(context) : new ImageView(context);
@@ -571,7 +571,7 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
         handler.removeCallbacks(task);
         int delayTime = subList.get(currentItem).getTime();
         changeTime = System.currentTimeMillis() + delayTime;
-        Log.e("auto", "startAutoPlay: " + delayTime);
+        Log.i("auto", "startAutoPlay: " + delayTime);
         handler.postDelayed(task, delayTime);
     }
 
@@ -579,18 +579,18 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
      * @param delayTime
      */
     private void startAutoPlay(int delayTime) {
-        Log.e("auto", "startAutoPlay: " + delayTime);
+        Log.i("auto", "startAutoPlay: " + delayTime);
         startPositionVideoView(currentItem);
         handler.removeCallbacks(task);
         handler.postDelayed(task, delayTime);
     }
 
     private void stopAutoPlay() {
-        Log.e("auto", "stopAutoPlay: ");
+        Log.i("auto", "stopAutoPlay: ");
         stopPositionVideoView(currentItem);
         if (changeTime != 0) {
             currentDelayTime = (int) (changeTime - System.currentTimeMillis());
-            Log.e("auto", "剩余延迟: " + currentDelayTime);
+            Log.i("auto", "剩余延迟: " + currentDelayTime);
         }
         handler.removeCallbacks(task);
     }
@@ -626,10 +626,10 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
                     || action == MotionEvent.ACTION_CANCEL
                     || action == MotionEvent.ACTION_OUTSIDE) {
                 if (page == currentItem) {
-                    Log.e("auto", "没切换画面");
+                    Log.i("auto", "没切换画面");
                     startAutoPlay(Math.max(0, currentDelayTime));
                 } else {
-                    Log.e("auto", "切换了！");
+                    Log.i("auto", "切换了！");
                     startAutoPlay();
                 }
             }
@@ -676,10 +676,10 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
                 });
             }
             if (view instanceof VideoView) {
-                videoLoader.onPrepared(context, item.getUrl(), (VideoView) view);
+                videoLoader.onPrepared(context, item.getUrl(), (VideoView) view, cachePath);
             }
             if (view instanceof ImageView) {
-                imageLoader.onPrepared(context, item.getUrl(), view);
+                imageLoader.onPrepared(context, item.getUrl(), view, cachePath);
             }
             return view;
         }

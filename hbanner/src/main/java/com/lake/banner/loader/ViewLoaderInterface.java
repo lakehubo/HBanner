@@ -12,9 +12,9 @@ import java.io.Serializable;
  */
 public interface ViewLoaderInterface<T extends View> extends Serializable {
 
-    T createView(Context context);
+    T createView(Context context,int gravity);
 
-    void onPrepared(Context context, Object path, T view);
+    void onPrepared(Context context, Object path, T view,String cachePath);
 
     void onDestroy(T view);
 }

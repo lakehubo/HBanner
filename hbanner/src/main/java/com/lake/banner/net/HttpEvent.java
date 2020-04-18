@@ -3,11 +3,8 @@ package com.lake.banner.net;
 import android.os.Environment;
 import android.text.TextUtils;
 import android.util.Log;
-
-import com.google.gson.Gson;
 import com.lake.banner.uitls.Constants;
 import com.lake.banner.uitls.ParameterizedTypeUtil;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -27,7 +24,6 @@ import java.util.Map;
 public abstract class HttpEvent {
     private HttpCallback.ProgressRequestHttpCallback progressRequestHttpCallback = null;//进度回调
     private HttpCallback.TimeRequestHttpCallback timeRequestHttpCallback = null;//携带服务器时间的回调
-    protected Gson gson = new Gson();
 
     <T> void httpRequest(HttpParam param, HttpCallback.RequestHttpCallback<T> callback) {
         Log.e("lake", param.toString());
@@ -117,7 +113,7 @@ public abstract class HttpEvent {
             inputStream = conn.getInputStream();
             String r = inString(inputStream);
             inputStream.close();
-            return (T) gson.fromJson(r, type);
+            return (T) r;
         }
     }
 
