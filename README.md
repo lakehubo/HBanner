@@ -5,6 +5,7 @@
 作者开源项目地址https://github.com/youth5201314/banner
 
 我在他的项目上做了一些更改，新增了上下切换动画，以及视频图片可以混合并且可自定义设置每个子视图显示的时间
+如果控件对你有帮助，欢迎star，你的一个赞是我继续优化下去的动力
 
 ##### 目前已优化项
 * 1.目前新增了在线视频缓存功能，当传入的地址对象为uri类型时，将对该地址的视频/图片是否下载到本地进行判断，默认会进行缓存并优先读取本地视频/图片进行轮播，若为本地视频/图片，请用string对象。
@@ -15,6 +16,9 @@
 * 6.优化标题的传入方式（1.0.2）
 * 7.新增控件生命周期重启和暂停的方法（1.0.3）
 * 8.新增缓存地址自定义，解决关闭缓存下网络图片无法显示问题（1.0.3）
+* 9.降低sdk最低版本支持为16（1.0.4）
+* 10.修复设置缓存地址后，无法正确读取缓存视频和图片的bug（1.0.4）
+* 11.修改图片视频控件center和full布局设置的调用位置（1.0.4）
 
 ## 使用方式
 
@@ -29,7 +33,7 @@
 >Gradle 依赖添加方式
 ```xml
     dependencies {
-        implementation 'com.lakehubo:hbanner:1.0.3'
+        implementation 'com.lakehubo:hbanner:1.0.4'
         ...
     }
     
@@ -39,7 +43,7 @@
 <dependency>
   <groupId>com.lakehubo</groupId>
   <artifactId>hbanner</artifactId>
-  <version>1.0.3</version>
+  <version>1.0.4</version>
   <type>pom</type>
 </dependency>
 ```
@@ -49,6 +53,9 @@
     List<ViewItemBean> list = new ArrayList<>();
     Uri path1 = Uri.parse("https://v-cdn.zjol.com.cn/123468.mp4");
     Uri path2 = Uri.parse("https://v-cdn.zjol.com.cn/276982.mp4");
+//如果你想调用apk本身资源携带的视频可以用以下方式传入
+//        Uri path1 = Uri.parse("android.resource://" + getPackageName() + "/"+ R.raw.default1);
+//        Uri path2 = Uri.parse("android.resource://" + getPackageName() + "/"+ R.raw.default2);
     Uri imageUrl = Uri.parse("https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1579170629919&di=fc03a214795a764b4094aba86775fb8f&imgtype=jpg&src=http%3A%2F%2Fimg4.imgtn.bdimg.com%2Fit%2Fu%3D4061015229%2C3374626956%26fm%3D214%26gp%3D0.jpg");
     list.add(new ViewItemBean(VIDEO, path1, 15 * 1000));
     list.add(new ViewItemBean(IMAGE, imageUrl, 2 * 1000));
@@ -136,22 +143,25 @@ List<ViewItemBean> list = new ArrayList<>();
  * 例如自定义使用glide加载图片代理实现
  */
 public class MyImageLoader implements ViewLoaderInterface<ImageView> {
-    private int gravity = BannerGravity.CENTER;
-
     public ImageLoader() {
     }
 
-    public ImageLoader(int gravity) {
-        this.gravity = gravity;
-    }
-
     @Override
-    public ImageView createView(Context context) {
-        return new ImageView(context);
+    public ImageView createView(Context context, int gravity) {
+        ImageView imageView = new ImageView(context);
+        switch (gravity) {
+            case BannerGravity.CENTER:
+                 imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                 break;
+            case BannerGravity.FULL_SCREEN:
+                 imageView.setScaleType(ImageView.ScaleType.FIT_XY);
+                 break;
+        }
+        return imageView;
     }
 
     @Override//view预加载时候调用，并非正在显示
-    public void onPrepared(Context context, Object path, ImageView imageView) {
+    public void onPrepared(Context context, Object path, ImageView imageView, String cachePath) {
         //Glide 加载图片简单用法
         Glide.with(context).load(path).into(imageView);
     }
@@ -166,3 +176,8 @@ banner.setImageLoader(new MyImageLoader());
 
 //替换视频控件同理  
 ```
+##### 版本1.0.4
+>更新内容：
+* 1.降低sdk最低版本支持为16
+* 2.修复设置缓存地址后，无法正确读取缓存视频和图片的bug
+* 3.修改图片视频控件center和full布局设置的调用位置
