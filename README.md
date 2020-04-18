@@ -67,6 +67,8 @@
           .setBannerAnimation(Transformer.Default)
           .setBannerStyle(BannerStyle.NUM_INDICATOR)
           .setCache(true)//可以不用设置，默认为true
+          //指定缓存的地址 android10指定app独立存储地址可解决外部存储不可读写的问题
+          .setCachePath(getExternalFilesDir(Environment.DIRECTORY_MOVIES).getAbsolutePath() + File.separator + "hbanner")
           .setViewGravity(BannerGravity.CENTER)
           .start();
 ```
