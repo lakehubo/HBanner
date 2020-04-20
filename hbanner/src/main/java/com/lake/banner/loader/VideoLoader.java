@@ -6,8 +6,6 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.util.Log;
 import android.widget.VideoView;
-import com.lake.banner.BannerGravity;
-import com.lake.banner.uitls.Constants;
 import com.lake.banner.uitls.MD5Util;
 import com.lake.banner.view.CustomVideoView;
 import java.io.File;

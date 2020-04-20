@@ -755,11 +755,11 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
                 break;
             case BannerStyle.NUM_INDICATOR_TITLE:
                 numIndicatorInside.setText(position + "/" + count);
-                bannerTitle.setText(subList.get(position - 1).getTitle());
+                bannerTitle.setText(subList.get(position).getTitle());
                 break;
             case BannerStyle.CIRCLE_INDICATOR_TITLE:
             case BannerStyle.CIRCLE_INDICATOR_TITLE_INSIDE:
-                bannerTitle.setText(subList.get(position - 1).getTitle());
+                bannerTitle.setText(subList.get(position).getTitle());
                 break;
         }
     }
