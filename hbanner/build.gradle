@@ -3,7 +3,7 @@ apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'com.jfrog.bintray'
 
 // 版本号，下次更新是只需要更改版本号即可
-version = "1.0.4"
+version = "1.0.5"
 
 android {
     compileSdkVersion 29
@@ -11,7 +11,7 @@ android {
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 29
-        versionCode 5
+        versionCode 6
         versionName version
     }
     buildTypes {

@@ -19,6 +19,7 @@
 * 9.降低sdk最低版本支持为16（1.0.4）
 * 10.修复设置缓存地址后，无法正确读取缓存视频和图片的bug（1.0.4）
 * 11.修改图片视频控件center和full布局设置的调用位置（1.0.4）
+* 12.修复标题显示不正确bug（1.0.5）
 
 ## 使用方式
 
@@ -33,7 +34,7 @@
 >Gradle 依赖添加方式
 ```xml
     dependencies {
-        implementation 'com.lakehubo:hbanner:1.0.4'
+        implementation 'com.lakehubo:hbanner:1.0.5'
         ...
     }
     
@@ -43,7 +44,7 @@
 <dependency>
   <groupId>com.lakehubo</groupId>
   <artifactId>hbanner</artifactId>
-  <version>1.0.4</version>
+  <version>1.0.5</version>
   <type>pom</type>
 </dependency>
 ```
@@ -181,3 +182,7 @@ banner.setImageLoader(new MyImageLoader());
 * 1.降低sdk最低版本支持为16
 * 2.修复设置缓存地址后，无法正确读取缓存视频和图片的bug
 * 3.修改图片视频控件center和full布局设置的调用位置
+
+##### 版本1.0.5
+>更新内容：
+* 1.修复标题显示顺序不对应bug
