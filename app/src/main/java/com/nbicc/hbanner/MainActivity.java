@@ -46,7 +46,8 @@ public class MainActivity extends BaseActivity {
     private void init() {
         list = new ArrayList<>();
         Uri path1 = Uri.parse("https://v-cdn.zjol.com.cn/123468.mp4");
-        Uri path2 = Uri.parse("https://v-cdn.zjol.com.cn/276982.mp4");
+//        Uri path2 = Uri.parse("https://v-cdn.zjol.com.cn/276982.mp4");
+        Uri path2 = Uri.parse("https://www.17sucai.com/preview/1232113/2018-06-05/v/bgvideo-720-2.mp4");
 //        Uri path1 = Uri.parse("android.resource://" + getPackageName() + "/"+ R.raw.default1);
 //        Uri path2 = Uri.parse("android.resource://" + getPackageName() + "/"+ R.raw.default2);
         Uri imageUrl = Uri.parse("https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1579170629919&di=fc03a214795a764b4094aba86775fb8f&imgtype=jpg&src=http%3A%2F%2Fimg4.imgtn.bdimg.com%2Fit%2Fu%3D4061015229%2C3374626956%26fm%3D214%26gp%3D0.jpg");
@@ -59,7 +60,7 @@ public class MainActivity extends BaseActivity {
         banner.setViews(list)
                 .setBannerAnimation(Transformer.Default)//换场方式
                 .setBannerStyle(BannerStyle.CIRCLE_INDICATOR_TITLE)//指示器模式
-                .setCache(false)//可以不用设置，默认为true
+                .setCache(true)//可以不用设置，默认为true
                 .setCachePath(getExternalFilesDir(Environment.DIRECTORY_MOVIES).getAbsolutePath() + File.separator + "hbanner")
                 .setViewGravity(BannerGravity.CENTER)
                 .setShowTitle(true)//是否显示标题

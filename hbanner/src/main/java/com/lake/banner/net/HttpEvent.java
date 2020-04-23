@@ -3,8 +3,10 @@ package com.lake.banner.net;
 import android.os.Environment;
 import android.text.TextUtils;
 import android.util.Log;
+
 import com.lake.banner.uitls.Constants;
 import com.lake.banner.uitls.ParameterizedTypeUtil;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -18,8 +20,18 @@ import java.io.OutputStream;
 import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 public abstract class HttpEvent {
     private HttpCallback.ProgressRequestHttpCallback progressRequestHttpCallback = null;//进度回调
@@ -39,6 +51,10 @@ public abstract class HttpEvent {
         try {
             URL url = new URL(param.getUrl());
             conn = (HttpURLConnection) url.openConnection();
+            if (conn instanceof HttpsURLConnection){
+                trustAllHosts((HttpsURLConnection) conn);
+                ((HttpsURLConnection) conn).setHostnameVerifier(DO_NOT_VERIFY);
+            }
             conn.setConnectTimeout(param.timeOut);//设置连接超时时间
             conn.setReadTimeout(param.readTimeOut);//设置读取超时
             HashMap<String, String> map = param.getHeader();
@@ -80,6 +96,55 @@ public abstract class HttpEvent {
             if (conn != null)
                 conn.disconnect();
         }
+    }
+
+    /**
+     * 覆盖java默认的证书验证
+     */
+    private static final TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager() {
+        @Override
+        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+            return new java.security.cert.X509Certificate[]{};
+        }
+
+        @Override
+        public void checkClientTrusted(X509Certificate[] chain, String authType)
+                throws CertificateException {
+        }
+
+        @Override
+        public void checkServerTrusted(X509Certificate[] chain, String authType)
+                throws CertificateException {
+        }
+    }};
+
+    /**
+     * 设置不验证主机
+     */
+    private static final HostnameVerifier DO_NOT_VERIFY = new HostnameVerifier() {
+        @Override
+        public boolean verify(String hostname, SSLSession session) {
+            return true;
+        }
+    };
+
+    /**
+     * 信任所有
+     *
+     * @param connection
+     * @return
+     */
+    private SSLSocketFactory trustAllHosts(HttpsURLConnection connection) {
+        SSLSocketFactory oldFactory = connection.getSSLSocketFactory();
+        try {
+            SSLContext sc = SSLContext.getInstance("TLS");
+            sc.init(null, trustAllCerts, new java.security.SecureRandom());
+            SSLSocketFactory newFactory = sc.getSocketFactory();
+            connection.setSSLSocketFactory(newFactory);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return oldFactory;
     }
 
     //获取泛型的具体类型的结果

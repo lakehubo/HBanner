@@ -2,12 +2,10 @@ package com.lake.banner;
 
 import android.content.Context;
 import android.content.res.TypedArray;
-
 import androidx.annotation.IntDef;
 import androidx.annotation.IntRange;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
-
 import android.net.Uri;
 import android.text.TextUtils;
 import android.util.AttributeSet;
@@ -26,7 +24,6 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.VideoView;
-
 import com.lake.banner.listener.OnBannerListener;
 import com.lake.banner.loader.ImageLoader;
 import com.lake.banner.loader.VideoLoader;
@@ -41,14 +38,12 @@ import com.lake.banner.net.HttpThreadPool;
 import com.lake.banner.uitls.Constants;
 import com.lake.banner.uitls.MD5Util;
 import com.lake.banner.view.BannerViewPager;
-
 import java.io.File;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
-
 import static androidx.viewpager.widget.ViewPager.OnPageChangeListener;
 import static androidx.viewpager.widget.ViewPager.PageTransformer;
 
@@ -413,7 +408,7 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
 
                 @Override
                 public void failed(String Msg) {
-                    Log.e("lake", "failed: ");
+                    Log.e("lake", "failed: " + Msg);
                     if (file.exists())
                         file.delete();
                 }
@@ -569,7 +564,7 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
 
     private void startAutoPlay() {
         handler.removeCallbacks(task);
-        int delayTime = subList.get(currentItem).getTime();
+        int delayTime = subList.size() > 0 ? subList.get(currentItem).getTime() : 0;
         changeTime = System.currentTimeMillis() + delayTime;
         Log.i("auto", "startAutoPlay: " + delayTime);
         handler.postDelayed(task, delayTime);

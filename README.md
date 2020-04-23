@@ -21,6 +21,7 @@
 * 10.修复设置缓存地址后，无法正确读取缓存视频和图片的bug（1.0.4）
 * 11.修改图片视频控件center和full布局设置的调用位置（1.0.4）
 * 12.修复标题显示不正确bug（1.0.5）
+* 13.修复部分视频网站无法下载缓存的问题（本版本下载https资源时，会绕过所有证书，信任所有https网站）（1.0.6）
 
 ## 使用方式
 
@@ -35,7 +36,7 @@
 >Gradle 依赖添加方式
 ```xml
     dependencies {
-        implementation 'com.lakehubo:hbanner:1.0.5'
+        implementation 'com.lakehubo:hbanner:1.0.6'
         ...
     }
     
@@ -45,7 +46,7 @@
 <dependency>
   <groupId>com.lakehubo</groupId>
   <artifactId>hbanner</artifactId>
-  <version>1.0.5</version>
+  <version>1.0.6</version>
   <type>pom</type>
 </dependency>
 ```
@@ -187,3 +188,7 @@ banner.setImageLoader(new MyImageLoader());
 ##### 版本1.0.5
 >更新内容：
 * 1.修复标题显示顺序不对应bug
+
+##### 版本1.0.6
+>更新内容：
+* 1.修复部分视频网站无法下载缓存的问题（本版本下载https资源时，会绕过所有证书，信任所有https网站，且在视频未完全缓存时，视频可能无法正常播放，当视频缓存完成，轮播到当前视频时，会正常播放！）
