@@ -1,4 +1,5 @@
 # HBanner
+非常感谢在issues里给我留言的小伙伴！还有很详细的bug复现描述，我会继续努力。目前部分朋友提出的视频切换图片闪烁的问题，我还没有复现出来（手里只有小米手机），所以还没解决该问题，请优先使用BannerGravity.FULL_SCREEN的全屏布局方式，可能闪烁情况会有所改善。
 
 首先特别感谢原作者youth5201314的开源banner
 
@@ -22,6 +23,8 @@
 * 11.修改图片视频控件center和full布局设置的调用位置（1.0.4）
 * 12.修复标题显示不正确bug（1.0.5）
 * 13.修复部分视频网站无法下载缓存的问题（本版本下载https资源时，会绕过所有证书，信任所有https网站）（1.0.6）
+* 14.修复单个视频无限轮播问题（1.0.7）
+* 15.修复update崩溃bug（1.0.7）
 
 ## 使用方式
 
@@ -36,7 +39,7 @@
 >Gradle 依赖添加方式
 ```xml
     dependencies {
-        implementation 'com.lakehubo:hbanner:1.0.6'
+        implementation 'com.lakehubo:hbanner:1.0.7'
         ...
     }
     
@@ -46,7 +49,7 @@
 <dependency>
   <groupId>com.lakehubo</groupId>
   <artifactId>hbanner</artifactId>
-  <version>1.0.6</version>
+  <version>1.0.7</version>
   <type>pom</type>
 </dependency>
 ```
@@ -192,3 +195,14 @@ banner.setImageLoader(new MyImageLoader());
 ##### 版本1.0.6
 >更新内容：
 * 1.修复部分视频网站无法下载缓存的问题（本版本下载https资源时，会绕过所有证书，信任所有https网站，且在视频未完全缓存时，视频可能无法正常播放，当视频缓存完成，轮播到当前视频时，会正常播放！）
+
+##### 版本1.0.7
+>更新内容：
+* 1.修复单个视频无限轮播问题
+* 2.修复update崩溃bug（该版本尚遗留问题待解决，当update列表中第一个item为video类型时，操作update方法后，新一轮的轮播可能会出现首视频暂停不自动播放的问题，轮播一轮后会正常）
+```java
+List<ViewItemBean> list = new ArrayList<>();
+list.add(...)//add your new item
+....
+banner.update(list);//update it!
+```
