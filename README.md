@@ -25,6 +25,7 @@
 * 13.修复部分视频网站无法下载缓存的问题（本版本下载https资源时，会绕过所有证书，信任所有https网站）（1.0.6）
 * 14.修复单个视频无限轮播问题（1.0.7）
 * 15.修复update崩溃bug（1.0.7）
+* 16.修复list为0时，调用控件生命周期引起的崩溃问题（1.0.7）
 
 ## 使用方式
 
@@ -200,6 +201,7 @@ banner.setImageLoader(new MyImageLoader());
 >更新内容：
 * 1.修复单个视频无限轮播问题
 * 2.修复update崩溃bug（该版本尚遗留问题待解决，当update列表中第一个item为video类型时，操作update方法后，新一轮的轮播可能会出现首视频暂停不自动播放的问题，轮播一轮后会正常）
+* 3.修复list为0时，调用控件生命周期引起的崩溃问题
 ```java
 List<ViewItemBean> list = new ArrayList<>();
 list.add(...)//add your new item
