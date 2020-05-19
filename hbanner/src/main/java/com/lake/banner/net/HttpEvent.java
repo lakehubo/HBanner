@@ -81,7 +81,7 @@ public abstract class HttpEvent {
             long webTime = conn.getDate();
             if (timeRequestHttpCallback != null)
                 timeRequestHttpCallback.onTimeInfo(webTime);
-            Log.e("lake", "httpRequest: " + conn.getResponseCode());
+//            Log.e("lake", "httpRequest: " + conn.getResponseCode());
             if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
                 T r = getResultType(conn, param, callback);
                 callback.success(r);

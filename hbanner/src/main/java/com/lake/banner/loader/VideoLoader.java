@@ -29,8 +29,12 @@ public class VideoLoader implements VideoViewLoaderInterface {
     public void onPrepared(Context context, Object path, VideoView videoView,String cachePath) {
         try {
             videoView.setBackgroundColor(Color.TRANSPARENT);
+            videoView.setOnPreparedListener(mp->{
+                Log.e("auto", "videoView onPrepared");
+            });
             videoView.setOnErrorListener((MediaPlayer mp, int what, int extra) -> {
                 //视频读取失败！
+                Log.e("auto", "videoView error="+what);
                 return true;
             });
             if (path instanceof String) {
@@ -41,7 +45,7 @@ public class VideoLoader implements VideoViewLoaderInterface {
                 File file = new File(cachePath + File.separator + MD5Util.md5(path.toString()) + type);
                 if (file.exists()) {
                     Log.e("lake", "onPrepared: isCache");
-                    videoView.setVideoPath(file.getAbsolutePath());
+                    videoView.setVideoURI(Uri.parse(file.getPath()));
                 } else {
                     Log.e("lake", "onPrepared: noCache");
                     videoView.setVideoURI((Uri) path);
@@ -54,7 +58,7 @@ public class VideoLoader implements VideoViewLoaderInterface {
 
     @Override
     public void displayView(Context context, VideoView videoView) {
-        Log.e("test", "displayView: ");
+        Log.e("auto", "displayView: ");
         videoView.seekTo(0);
         videoView.start();
     }
@@ -67,7 +71,7 @@ public class VideoLoader implements VideoViewLoaderInterface {
 
     @Override
     public void onStop(VideoView view) {
-        Log.e("test", "onStop: ");
+        Log.e("auto", "onStop: ");
         view.pause();
     }
 

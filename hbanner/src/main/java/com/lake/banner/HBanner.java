@@ -2,10 +2,12 @@ package com.lake.banner;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+
 import androidx.annotation.IntDef;
 import androidx.annotation.IntRange;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
+
 import android.net.Uri;
 import android.text.TextUtils;
 import android.util.AttributeSet;
@@ -24,6 +26,7 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.VideoView;
+
 import com.lake.banner.listener.OnBannerListener;
 import com.lake.banner.loader.ImageLoader;
 import com.lake.banner.loader.VideoLoader;
@@ -38,12 +41,14 @@ import com.lake.banner.net.HttpThreadPool;
 import com.lake.banner.uitls.Constants;
 import com.lake.banner.uitls.MD5Util;
 import com.lake.banner.view.BannerViewPager;
+
 import java.io.File;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+
 import static androidx.viewpager.widget.ViewPager.OnPageChangeListener;
 import static androidx.viewpager.widget.ViewPager.PageTransformer;
 
@@ -302,6 +307,12 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
     }
 
     public void update(List<ViewItemBean> list) {
+        if (count > 0 && isAutoPlay) {
+            stopAutoPlay();
+        }
+        lastItem = 0;
+        currentDelayTime = 0;
+        changeTime = 0;
         this.itemList.clear();
         this.subList.clear();
         this.indicatorImages.clear();
@@ -345,7 +356,7 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
     }
 
     public void onStop() {
-        if (isAutoPlay) {
+        if (isAutoPlay && subList.size() > 1) {
             currentDelayTime = subList.get(currentItem).getTime();
         }
     }
@@ -382,6 +393,8 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
                         continue;
                     Uri uri = (Uri) bean.getUrl();
                     String pStr = uri.toString();
+                    if(!pStr.contains("http"))
+                        continue;
                     String type = pStr.substring(pStr.lastIndexOf("."));
                     String cacheFilePath = MD5Util.md5(pStr);
                     Log.e("lake", "checkCache: " + cacheFilePath + type);
@@ -564,7 +577,7 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
 
     private void startAutoPlay() {
         handler.removeCallbacks(task);
-        int delayTime = subList.size() > 0 ? subList.get(currentItem).getTime() : 0;
+        int delayTime = count > 0 ? subList.get(currentItem).getTime() : 0;
         changeTime = System.currentTimeMillis() + delayTime;
         Log.i("auto", "startAutoPlay: " + delayTime);
         handler.postDelayed(task, delayTime);
@@ -604,6 +617,18 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
                 int delayTime = subList.get(currentItem).getTime();
                 changeTime = System.currentTimeMillis() + delayTime;
                 handler.postDelayed(task, delayTime);
+            } else {
+                if (count == 1 && subList.size() > 1) {//单视频循环
+                    if (subList.get(1).getType() == BannerConfig.VIDEO) {
+                        int delayTime = subList.get(1).getTime();
+                        View view = subList.get(1).getView();
+                        if (view instanceof VideoView) {
+                            videoLoader.displayView(context, (VideoView) view);
+                        }
+                        changeTime = System.currentTimeMillis() + delayTime;
+                        handler.postDelayed(task, delayTime);
+                    }
+                }
             }
         }
     };
@@ -722,7 +747,7 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
     @Override
     public void onPageSelected(int position) {
         Log.e("auto", "onPageSelected: " + position);
-        if (lastItem != position)
+        if (lastItem != 0 && lastItem != position)
             stopPositionVideoView(lastItem);
         lastItem = position;
 

@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">HBanner</string>
+    <string name="test_update">Update</string>
+    <string name="back_update">Original</string>
 </resources>
