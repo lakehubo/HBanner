@@ -212,7 +212,7 @@ protected void onStop() {
   通过setVideoLoader(VideoViewLoaderInterface videoLoader)以及setImageLoader(ViewLoaderInterface imageLoader)
   方法实现替换
 
-```
+```java
 /**
  * 例如自定义使用glide加载图片代理实现
  */
