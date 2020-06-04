@@ -5,14 +5,13 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.VideoView;
-
-import com.lake.banner.BannerGravity;
+import com.lake.banner.VideoGravityType;
 
 public class CustomVideoView extends VideoView {
     private static final String TAG = CustomVideoView.class.getSimpleName();
     private int parentWidth = 0;
     private int parentHeight = 0;
-    private int gravity = BannerGravity.CENTER;
+    private int gravity = VideoGravityType.CENTER;
 
     public CustomVideoView(Context context) {
         super(context);
@@ -28,7 +27,7 @@ public class CustomVideoView extends VideoView {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        if(gravity==BannerGravity.FULL_SCREEN){
+        if(gravity== VideoGravityType.FULL_SCREEN){
             int width = getDefaultSize(getWidth(), widthMeasureSpec);
             int height = getDefaultSize(getHeight(), heightMeasureSpec);
             setMeasuredDimension(width, height);
@@ -47,12 +46,13 @@ public class CustomVideoView extends VideoView {
     public void layout(int l, int t, int r, int b) {
         int h = b - t;
         int w = r - l;
+        Log.e(TAG, "layout: h="+h+",w="+w);
         switch (gravity) {
-            case BannerGravity.CENTER:
+            case VideoGravityType.CENTER:
                 //center模式
                 if (parentHeight > h) {
                     int offsetH = parentHeight - h;
-                    t += +offsetH / 2;
+                    t += offsetH / 2;
                     b += offsetH / 2;
                 }
                 if (parentWidth > w) {
@@ -61,11 +61,11 @@ public class CustomVideoView extends VideoView {
                     r += offsetW / 2;
                 }
                 break;
-            case BannerGravity.CENTER_HORIZONTAL:
+            case VideoGravityType.CENTER_HORIZONTAL:
                 //垂直居中
                 if (parentHeight > h) {
                     int offsetH = parentHeight - h;
-                    t += +offsetH / 2;
+                    t += offsetH / 2;
                     b += offsetH / 2;
                 }
                 break;

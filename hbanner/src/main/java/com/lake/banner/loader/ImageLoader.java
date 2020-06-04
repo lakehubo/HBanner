@@ -5,9 +5,8 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.util.Log;
 import android.widget.ImageView;
-import com.lake.banner.BannerGravity;
+import com.lake.banner.VideoGravityType;
 import com.lake.banner.R;
-import com.lake.banner.uitls.Constants;
 import com.lake.banner.uitls.MD5Util;
 import java.io.File;
 
@@ -21,14 +20,7 @@ public class ImageLoader implements ViewLoaderInterface<ImageView> {
     @Override
     public ImageView createView(Context context,int gravity) {
         ImageView imageView = new ImageView(context);
-        switch (gravity) {
-            case BannerGravity.CENTER:
-                imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
-                break;
-            case BannerGravity.FULL_SCREEN:
-                imageView.setScaleType(ImageView.ScaleType.FIT_XY);
-                break;
-        }
+        imageView.setScaleType(ImageView.ScaleType.values()[gravity]);
         return imageView;
     }
 

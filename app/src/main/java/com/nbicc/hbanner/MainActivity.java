@@ -7,12 +7,12 @@ import android.os.Environment;
 import android.view.View;
 import android.widget.Button;
 
-import com.lake.banner.BannerGravity;
+import com.lake.banner.ImageGravityType;
+import com.lake.banner.VideoGravityType;
 import com.lake.banner.HBanner;
 import com.lake.banner.BannerStyle;
 import com.lake.banner.Transformer;
 import com.lake.banner.loader.ViewItemBean;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,23 +54,14 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 
     private void init() {
         List<ViewItemBean> list = new ArrayList<>();
-        Uri path1 = Uri.parse("https://v-cdn.zjol.com.cn/123468.mp4");
-        Uri path2 = Uri.parse("https://v-cdn.zjol.com.cn/276982.mp4");
-//        Uri path1 = Uri.parse("android.resource://" + getPackageName() + "/"+ R.raw.default1);
-//        Uri path2 = Uri.parse("android.resource://" + getPackageName() + "/"+ R.raw.default2);
-        Uri imageUrl = Uri.parse("https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1579170629919&di=fc03a214795a764b4094aba86775fb8f&imgtype=jpg&src=http%3A%2F%2Fimg4.imgtn.bdimg.com%2Fit%2Fu%3D4061015229%2C3374626956%26fm%3D214%26gp%3D0.jpg");
-        list.add(new ViewItemBean(VIDEO, "标题1", path1, 4 * 1000));
-        list.add(new ViewItemBean(IMAGE, "标题2", imageUrl, 5 * 1000));
-        list.add(new ViewItemBean(VIDEO, "标题3", path2, 6 * 1000));
-        list.add(new ViewItemBean(IMAGE, "标题4", R.mipmap.b1, 2 * 1000));
-//        list.add(new ViewItemBean(IMAGE, "标题5", R.mipmap.b2, 2 * 1000));
 
         banner.setViews(list)
-                .setBannerAnimation(Transformer.Default)//换场方式
+                .setBannerAnimation(Transformer.Vertical)//换场方式
                 .setBannerStyle(BannerStyle.CIRCLE_INDICATOR_TITLE)//指示器模式
                 .setCache(true)//可以不用设置，默认为true
                 .setCachePath(getExternalFilesDir(Environment.DIRECTORY_MOVIES).getAbsolutePath() + File.separator + "hbanner")
-                .setViewGravity(BannerGravity.CENTER)
+                .setVideoGravity(VideoGravityType.CENTER)
+                .setImageGravity(ImageGravityType.CENTER)
                 .setShowTitle(true)//是否显示标题
                 .setViewPagerIsScroll(true)//是否支持手滑
                 .start();
@@ -110,11 +101,11 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
             case R.id.original: {
                 List<ViewItemBean> list = new ArrayList<>();
                 Uri path1 = Uri.parse("https://v-cdn.zjol.com.cn/123468.mp4");
-                Uri path2 = Uri.parse("https://v-cdn.zjol.com.cn/276982.mp4");
+                //Uri path2 = Uri.parse("https://v-cdn.zjol.com.cn/276982.mp4");
                 Uri imageUrl = Uri.parse("https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1579170629919&di=fc03a214795a764b4094aba86775fb8f&imgtype=jpg&src=http%3A%2F%2Fimg4.imgtn.bdimg.com%2Fit%2Fu%3D4061015229%2C3374626956%26fm%3D214%26gp%3D0.jpg");
                 list.add(new ViewItemBean(VIDEO, "标题1", path1, 12 * 1000));
                 list.add(new ViewItemBean(IMAGE, "标题2", imageUrl, 5 * 1000));
-                list.add(new ViewItemBean(VIDEO, "标题3", path2, 6 * 1000));
+                //list.add(new ViewItemBean(VIDEO, "标题3", path2, 6 * 1000));
                 list.add(new ViewItemBean(IMAGE, "标题4", R.mipmap.b1, 2 * 1000));
                 banner.update(list);
                 break;
