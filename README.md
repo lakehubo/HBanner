@@ -28,6 +28,8 @@
 * 16.修复list为0时，调用控件生命周期引起的崩溃问题（1.0.7）
 * 17.拆分视频和图片的布局方式设置为setImageGravity以及setVideoGravity（1.0.8）
 * 18.修复竖方向切换时，视频相邻图片黑屏闪烁问题（1.0.8）
+* 19.去掉不适用的换场方法，原有的多个transform切换类对于有视频/图片混播不适用且会有视频黑屏bug存在，故只保留了横向以及纵向的切换动画，且不会导致视频黑屏（1.0.8）
+* 20.新增page背景颜色设置方法（1.0.8）
 
 ## 使用方式
 
@@ -42,7 +44,7 @@
 >Gradle 依赖添加方式
 ```xml
     dependencies {
-        implementation 'com.lakehubo:hbanner:1.0.7'
+        implementation 'com.lakehubo:hbanner:1.0.8'
         ...
     }
     
@@ -52,7 +54,7 @@
 <dependency>
   <groupId>com.lakehubo</groupId>
   <artifactId>hbanner</artifactId>
-  <version>1.0.7</version>
+  <version>1.0.8</version>
   <type>pom</type>
 </dependency>
 ```
