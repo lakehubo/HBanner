@@ -2,6 +2,7 @@ package com.nbicc.hbanner;
 
 import android.Manifest;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -101,6 +102,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                 break;
             }
             case R.id.original: {
+                String path = Environment.getExternalStorageDirectory().getAbsolutePath()+"/test.mp4";
                 List<ViewItemBean> list = new ArrayList<>();
                 Uri path1 = Uri.parse("https://v-cdn.zjol.com.cn/123468.mp4");
                 //Uri path2 = Uri.parse("https://v-cdn.zjol.com.cn/276982.mp4");
