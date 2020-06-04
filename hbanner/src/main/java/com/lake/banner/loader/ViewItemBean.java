@@ -36,7 +36,7 @@ public class ViewItemBean {
     //用于视频图片交替时候的过度对象
     public ViewItemBean() {
         this.type = BannerConfig.IMAGE;
-        this.url = R.mipmap.defaultvideobg;
+        this.url = R.mipmap.defalteimage;
         Time = 5;
     }
 

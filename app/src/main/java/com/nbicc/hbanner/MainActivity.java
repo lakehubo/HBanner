@@ -1,6 +1,7 @@
 package com.nbicc.hbanner;
 
 import android.Manifest;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -56,12 +57,13 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         List<ViewItemBean> list = new ArrayList<>();
 
         banner.setViews(list)
-                .setBannerAnimation(Transformer.Vertical)//换场方式
+                .setBannerAnimation(Transformer.Default)//换场方式
                 .setBannerStyle(BannerStyle.CIRCLE_INDICATOR_TITLE)//指示器模式
                 .setCache(true)//可以不用设置，默认为true
                 .setCachePath(getExternalFilesDir(Environment.DIRECTORY_MOVIES).getAbsolutePath() + File.separator + "hbanner")
-                .setVideoGravity(VideoGravityType.CENTER)
-                .setImageGravity(ImageGravityType.CENTER)
+                .setVideoGravity(VideoGravityType.CENTER)//视频布局方式
+                .setImageGravity(ImageGravityType.FIT_XY)//图片布局方式
+                .setPageBackgroundColor(Color.TRANSPARENT)//设置背景
                 .setShowTitle(true)//是否显示标题
                 .setViewPagerIsScroll(true)//是否支持手滑
                 .start();

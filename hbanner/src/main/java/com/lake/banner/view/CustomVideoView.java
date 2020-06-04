@@ -2,10 +2,10 @@ package com.lake.banner.view;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.VideoView;
 import com.lake.banner.VideoGravityType;
+import com.lake.banner.uitls.LogUtils;
 
 public class CustomVideoView extends VideoView {
     private static final String TAG = CustomVideoView.class.getSimpleName();
@@ -38,7 +38,7 @@ public class CustomVideoView extends VideoView {
         if (null != mViewGroup) {
             parentWidth = mViewGroup.getWidth();
             parentHeight = mViewGroup.getHeight();
-            Log.e(TAG, "onMeasure: " + parentWidth + "," + parentHeight);
+            LogUtils.e(TAG, "onMeasure: " + parentWidth + "," + parentHeight);
         }
     }
 
@@ -46,7 +46,7 @@ public class CustomVideoView extends VideoView {
     public void layout(int l, int t, int r, int b) {
         int h = b - t;
         int w = r - l;
-        Log.e(TAG, "layout: h="+h+",w="+w);
+        LogUtils.e(TAG, "layout: h="+h+",w="+w);
         switch (gravity) {
             case VideoGravityType.CENTER:
                 //center模式
@@ -70,7 +70,7 @@ public class CustomVideoView extends VideoView {
                 }
                 break;
         }
-        Log.e(TAG, "layout: " + l + "," + t + "," + r + "," + b);
+        LogUtils.e(TAG, "layout: " + l + "," + t + "," + r + "," + b);
         super.layout(l, t, r, b);
     }
 

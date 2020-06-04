@@ -22,11 +22,17 @@ public class DefaultTransformer extends ABaseTransformer {
 
 	@Override
 	protected void onTransform(View view, float position) {
+		if (position < -1) { // [-Infinity,-1)
+			// This page is way off-screen to the left.
+			view.setAlpha(0);
+		} else if (position <= 1) { // [-1,1]
+			view.setAlpha(1);
+			//set X position to swipe in from top
+			float xPosition = position * view.getWidth();
+			view.setTranslationX(xPosition);
+		} else { // (1,+Infinity]
+			// This page is way off-screen to the right.
+			view.setAlpha(0);
+		}
 	}
-
-	@Override
-	public boolean isPagingEnabled() {
-		return true;
-	}
-
 }

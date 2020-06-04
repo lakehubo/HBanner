@@ -8,7 +8,7 @@ import androidx.annotation.IntRange;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
-import android.graphics.PointF;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.text.TextUtils;
 import android.util.AttributeSet;
@@ -27,6 +27,7 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.VideoView;
+
 import com.lake.banner.listener.OnBannerListener;
 import com.lake.banner.loader.ImageLoader;
 import com.lake.banner.loader.VideoLoader;
@@ -39,14 +40,17 @@ import com.lake.banner.net.HttpClient;
 import com.lake.banner.net.HttpParam;
 import com.lake.banner.net.HttpThreadPool;
 import com.lake.banner.uitls.Constants;
+import com.lake.banner.uitls.LogUtils;
 import com.lake.banner.uitls.MD5Util;
 import com.lake.banner.view.BannerViewPager;
+
 import java.io.File;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+
 import static androidx.viewpager.widget.ViewPager.OnPageChangeListener;
 import static androidx.viewpager.widget.ViewPager.PageTransformer;
 
@@ -192,12 +196,26 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
         return this;
     }
 
-    /**
-     * 显示标题
-     *
-     * @param showTitle
-     * @return
-     */
+    //设置pager背景
+    public HBanner setPageBackground(Drawable background) {
+        if (viewPager != null)
+            viewPager.setBackground(background);
+        return this;
+    }
+
+    public HBanner setPageBackgroundResource(int resource) {
+        if (viewPager != null)
+            viewPager.setBackgroundResource(resource);
+        return this;
+    }
+
+    public HBanner setPageBackgroundColor(int color) {
+        if (viewPager != null)
+            viewPager.setBackgroundColor(color);
+        return this;
+    }
+
+    // 显示标题
     public HBanner setShowTitle(boolean showTitle) {
         this.isShowTitle = showTitle;
         return this;
@@ -222,7 +240,7 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
         try {
             setPageTransformer(true, transformer.newInstance());
         } catch (Exception e) {
-            Log.e(TAG, "Please set the PageTransformer class");
+            LogUtils.e(TAG, "Please set the PageTransformer class");
         }
         return this;
     }
@@ -315,6 +333,12 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
 
     public HBanner setViewPagerIsScroll(boolean isScroll) {
         this.isScroll = isScroll;
+        return this;
+    }
+
+    //是否显示log打印 默认关闭
+    public HBanner showLogInfo(boolean show) {
+        LogUtils.show_log = show;
         return this;
     }
 
@@ -417,7 +441,7 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
                         continue;
                     String type = pStr.substring(pStr.lastIndexOf("."));
                     String cacheFilePath = MD5Util.md5(pStr);
-                    Log.i("lake", "checkCache: " + cacheFilePath + type);
+                    LogUtils.i("lake", "checkCache: " + cacheFilePath + type);
                     File file = new File(cachePath + File.separator + cacheFilePath + type);
                     if (!file.exists()) {
                         cacheFile(uri.toString(), file);
@@ -436,12 +460,12 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
             HttpClient.getInstance().Get(httpParam, new HttpCallback.ProgressRequestHttpCallback<File>() {
                 @Override
                 public void success(File result) {
-                    Log.e("lake", "success: " + result.getName());
+                    LogUtils.i("lake", "success: " + result.getName());
                 }
 
                 @Override
                 public void failed(String Msg) {
-                    Log.e("lake", "failed: " + Msg);
+                    LogUtils.e("lake", "failed: " + Msg);
                     if (file.exists())
                         file.delete();
                 }
@@ -449,7 +473,7 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
                 @Override
                 public void progress(float progress, float count) {
                     float percent = progress / count * 100;
-                    Log.i("lake", "progress: " + String.format("%.2f", percent) + "%");
+                    LogUtils.i("lake", "progress: " + String.format("%.2f", percent) + "%");
                 }
             });
         });
@@ -510,7 +534,7 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
     private void setItemViewList(List<ViewItemBean> itemList) {
         if (itemList == null || itemList.size() <= 0) {
             bannerDefaultImage.setVisibility(VISIBLE);
-            Log.e(TAG, "The image data set is empty.");
+            LogUtils.e(TAG, "The image data set is empty.");
             return;
         }
         bannerDefaultImage.setVisibility(GONE);
@@ -602,7 +626,7 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
         handler.removeCallbacks(task);
         int delayTime = count > 0 ? subList.get(currentItem).getTime() : 0;
         changeTime = System.currentTimeMillis() + delayTime;
-        Log.i("auto", "startAutoPlay: " + delayTime);
+        LogUtils.i("auto", "startAutoPlay: " + delayTime);
         handler.postDelayed(task, delayTime);
     }
 
@@ -610,18 +634,18 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
      * @param delayTime
      */
     private void startAutoPlay(int delayTime) {
-        Log.i("auto", "startAutoPlay: " + delayTime);
+        LogUtils.i("auto", "startAutoPlay: " + delayTime);
         startPositionVideoView(currentItem);
         handler.removeCallbacks(task);
         handler.postDelayed(task, delayTime);
     }
 
     private void stopAutoPlay() {
-        Log.i("auto", "stopAutoPlay: ");
+        LogUtils.i("auto", "stopAutoPlay: ");
         stopPositionVideoView(currentItem);
         if (changeTime != 0) {
             currentDelayTime = (int) (changeTime - System.currentTimeMillis());
-            Log.i("auto", "剩余延迟: " + currentDelayTime);
+            LogUtils.i("auto", "剩余延迟: " + currentDelayTime);
         }
         handler.removeCallbacks(task);
     }
@@ -632,12 +656,13 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
         public void run() {
             if (count > 1 && isAutoPlay) {
                 currentItem = currentItem % (count + 1) + 1;
-                if (currentItem == 1) {
+                if (currentItem == 1) {//最后一张或者第一张
                     viewPager.setCurrentItem(currentItem, false);
                 } else {
                     viewPager.setCurrentItem(currentItem);
                 }
                 int delayTime = subList.get(currentItem).getTime();
+                LogUtils.i("auto", "currentItem: " + currentItem + ",delayTime=" + delayTime);
                 changeTime = System.currentTimeMillis() + delayTime;
                 handler.postDelayed(task, delayTime);
             } else {
@@ -669,10 +694,10 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
                     || action == MotionEvent.ACTION_CANCEL
                     || action == MotionEvent.ACTION_OUTSIDE) {
                 if (page == currentItem) {
-                    //Log.d("auto", "没切换画面");
+                    LogUtils.d("auto", "没切换画面");
                     startAutoPlay(Math.max(0, currentDelayTime));
                 } else {
-                    //Log.d("auto", "切换了！");
+                    LogUtils.d("auto", "切换了！");
                     startAutoPlay();
                 }
             }
@@ -709,7 +734,7 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
 
         @Override
         public Object instantiateItem(ViewGroup container, final int position) {
-            Log.i("lake", "instantiateItem: " + position);
+            LogUtils.i("lake", "instantiateItem: " + position);
             ViewItem item = subList.get(position);
             View view = item.getView();
             if (listener != null) {
@@ -736,7 +761,7 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
 
         @Override
         public void destroyItem(ViewGroup container, int position, Object object) {
-            Log.i("lake", "destroyItem: " + position);
+            LogUtils.i("lake", "destroyItem: " + position);
             View item = (View) object;
             if (item instanceof ViewGroup) {
                 ViewGroup viewGroup = (ViewGroup) item;
@@ -781,7 +806,7 @@ public class HBanner extends FrameLayout implements OnPageChangeListener {
 
     @Override
     public void onPageSelected(int position) {
-        Log.i("auto", "onPageSelected: " + position);
+        LogUtils.i("auto", "onPageSelected: " + position);
         if (lastItem != 0 && lastItem != position)
             stopPositionVideoView(lastItem);
         lastItem = position;
