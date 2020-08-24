@@ -22,6 +22,8 @@ public class VideoLoader implements VideoViewLoaderInterface {
         //全屏拉伸 CustomVideoView(context)；
         CustomVideoView customVideoView = new CustomVideoView(context);
         customVideoView.setGravityType(gravity);
+        customVideoView.setZOrderOnTop(true);
+        customVideoView.setZOrderMediaOverlay(true);
         return customVideoView;
     }
 
