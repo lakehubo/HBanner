@@ -2,12 +2,14 @@ package com.nbicc.hbanner;
 
 import android.Manifest;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.Button;
+
+import androidx.viewpager.widget.ViewPager;
 
 import com.lake.banner.ImageGravityType;
 import com.lake.banner.VideoGravityType;
@@ -15,6 +17,10 @@ import com.lake.banner.HBanner;
 import com.lake.banner.BannerStyle;
 import com.lake.banner.Transformer;
 import com.lake.banner.loader.ViewItemBean;
+import com.lake.hbanner.ImageSubView;
+import com.lake.hbanner.SubView;
+import com.lake.hbanner.VideoSubView;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +31,8 @@ import static com.lake.banner.BannerConfig.VIDEO;
 public class MainActivity extends BaseActivity implements View.OnClickListener {
     private HBanner banner;
     private Button updateBtn, original;
+
+    private ViewPager viewPager;
 
     public String[] NEEDED_PERMISSIONS = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -39,9 +47,32 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         updateBtn = findViewById(R.id.update);
         original = findViewById(R.id.original);
 
+        viewPager = findViewById(R.id.viewpager);
+        viewPager.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                viewPager.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+
+                com.lake.hbanner.HBanner hBanner = com.lake.hbanner.HBanner.create(viewPager);
+
+                List<SubView> data = new ArrayList<>();
+                data.add(new ImageSubView(getBaseContext(), Color.BLACK));
+                data.add(new ImageSubView(getBaseContext(), Color.RED));
+                data.add(new ImageSubView(getBaseContext(), Color.YELLOW));
+                Uri path = Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.default1);
+                data.add(new VideoSubView(getBaseContext(), path));
+
+                hBanner.sources(data);
+                //自动播放，非自动播放无需调用此方法
+                hBanner.play();
+            }
+        });
+
         updateBtn.setOnClickListener(this);
         original.setOnClickListener(this);
         verifyStoragePermissions(this);
+
+
     }
 
     @Override
@@ -102,7 +133,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                 break;
             }
             case R.id.original: {
-                String path = Environment.getExternalStorageDirectory().getAbsolutePath()+"/test.mp4";
+                String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/test.mp4";
                 List<ViewItemBean> list = new ArrayList<>();
                 Uri path1 = Uri.parse("https://v-cdn.zjol.com.cn/123468.mp4");
                 //Uri path2 = Uri.parse("https://v-cdn.zjol.com.cn/276982.mp4");

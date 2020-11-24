@@ -3,7 +3,7 @@ package com.lake.banner.uitls;
 import android.util.Log;
 
 public class LogUtils {
-    public static boolean show_log = false;
+    public static boolean show_log = true;
 
     public static void i(String tag, String msg) {
         if (show_log)

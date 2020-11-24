@@ -32,10 +32,10 @@ public class MD5Util {
     /**
      * 检查文件的md5特征码
      */
-    public static String encodeFile(String apkpath) {
+    public static String encodeFile(String path) {
         String md5 = null;
         try {
-            File file = new File(apkpath);
+            File file = new File(path);
             MessageDigest digest = MessageDigest.getInstance("md5");
             FileInputStream fis = new FileInputStream(file);
             byte[] buffer = new byte[1024];

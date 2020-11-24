@@ -16,4 +16,7 @@
         <attr name="banner_layout" format="reference"/>
         <attr name="banner_default_image" format="reference"/>
     </declare-styleable>
+    <declare-styleable name="Banner">
+
+    </declare-styleable>
 </resources>
