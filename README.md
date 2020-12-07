@@ -114,6 +114,8 @@ dependencies {
 | resId(@DrawableRes int id)   | int       | 图片来源的资源id（R.mipmap/R.drawable） |
 | duration(long show)          | long      | 图片显示时间（单位ms，默认值5000）      |
 
+> 注：file/url/resId其中必须有一个为有效值，否则会抛出参数错误异常
+
 
 
 ##### VideoSubView简单说明
