@@ -95,7 +95,7 @@ dependencies {
 
 ##### ImageSubView简单说明
 
-* 通过起内部Builder类进行参数初始化和构造。
+* 通过其内部Builder类进行参数初始化和构造。
 
 * ```java
   ImageSubView imge = new ImageSubView.Builder(getBaseContext())
@@ -118,7 +118,7 @@ dependencies {
 
 ##### VideoSubView简单说明
 
-* 通过起内部Builder类进行参数初始化和构造。
+* 通过其内部Builder类进行参数初始化和构造。
 
 * ```java
   VideoSubView view = new VideoSubView.Builder(getBaseContext())
