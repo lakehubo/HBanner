@@ -30,6 +30,6 @@ dependencies {
     testImplementation 'junit:junit:4.13'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
-    implementation project(':hbanner')
-    //implementation 'com.lakehubo:hbanner:1.0.8'
+    //implementation project(':hbanner')
+    implementation 'com.lakehubo:hbanner:1.1.0-alpha'
 }

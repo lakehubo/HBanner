@@ -26,7 +26,7 @@
 
 ```groovy
 dependencies {
-  	implementation 'com.lakehubo:hbanner:1.1.0'
+  	implementation 'com.lakehubo:hbanner:1.1.0-alpha'
 }
 ```
 
@@ -38,7 +38,7 @@ dependencies {
 <dependency>
   <groupId>com.lakehubo</groupId>
   <artifactId>hbanner</artifactId>
-  <version>1.1.0</version>
+  <version>1.1.0-alpha</version>
   <type>pom</type>
 </dependency>
 ```
