@@ -10,41 +10,37 @@
         android:id="@+id/tip1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="图片视频混播模式"
+        android:text="@string/tip"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <com.lake.banner.HBanner
-        android:visibility="gone"
-        android:id="@+id/banner"
-        android:layout_width="match_parent"
-        android:layout_height="400dp"
-        tools:layout_editor_absoluteY="19dp" />
-
-    <androidx.viewpager.widget.ViewPager
+    <com.lake.banner.view.BannerViewPager
         android:id="@+id/viewpager"
-        android:background="@color/colorPrimary"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:layout_editor_absoluteY="19dp" />
+        android:layout_height="200dp"
+        app:layout_constraintTop_toBottomOf="@id/tip1" />
+
+    <com.lake.banner.view.BannerViewPager
+        android:id="@+id/viewpager2"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        app:layout_constraintTop_toBottomOf="@id/viewpager" />
 
     <Button
-        android:visibility="gone"
-        android:id="@+id/update"
+        android:id="@+id/add"
         android:layout_width="120dp"
         android:layout_height="50dp"
         android:layout_margin="12dp"
-        android:text="@string/test_update"
+        android:text="@string/add"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/banner" />
+        app:layout_constraintTop_toBottomOf="@id/viewpager2" />
 
     <Button
-        android:visibility="gone"
-        android:id="@+id/original"
+        android:id="@+id/remove"
         android:layout_width="120dp"
         android:layout_height="50dp"
         android:layout_margin="12dp"
-        android:text="@string/back_update"
-        app:layout_constraintStart_toEndOf="@id/update"
-        app:layout_constraintTop_toBottomOf="@id/banner" />
+        android:text="@string/remove"
+        app:layout_constraintStart_toEndOf="@id/add"
+        app:layout_constraintTop_toBottomOf="@id/viewpager2" />
 </androidx.constraintlayout.widget.ConstraintLayout>

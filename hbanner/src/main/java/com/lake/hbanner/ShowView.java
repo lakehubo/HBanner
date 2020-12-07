@@ -1,8 +1,24 @@
 package com.lake.hbanner;
 
 import android.content.Context;
+import android.net.Uri;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.view.View;
 import android.widget.ImageView;
+
+import androidx.annotation.NonNull;
+
+import com.lake.banner.net.HttpCallback;
+import com.lake.banner.net.HttpClient;
+import com.lake.banner.net.HttpParam;
+import com.lake.banner.net.HttpThreadPool;
+import com.lake.banner.uitls.Constants;
+import com.lake.banner.uitls.LogUtils;
+import com.lake.banner.uitls.MD5Util;
+
+import java.io.File;
 
 /**
  * sub view 基类
@@ -18,7 +34,7 @@ public abstract class ShowView implements SubView {
     }
 
     @Override
-    public void onShowStart(HBanner hBanner, int position) {
+    public void onShowStart(final HBanner hBanner, int position) {
 
     }
 
@@ -38,5 +54,27 @@ public abstract class ShowView implements SubView {
         if (getView() == null)
             throw new RuntimeException("the getView can not be null!");
         return mImageCache;
+    }
+
+    @Override
+    public String getTag() {
+        return null;
+    }
+
+    protected void cacheFile(String url, HttpCallback callback) {
+        HttpThreadPool.getInstance().post(() -> {
+            HttpParam param = new HttpParam(url);
+            param.setFileName(MD5Util.md5(url));
+            param.setSavePath(Constants.DEFAULT_DOWNLOAD_DIR);
+            HttpClient.getInstance().Get(param, callback);
+        });
+    }
+
+    protected boolean isCached(final String url) {
+        return getCacheFile(url).exists();
+    }
+
+    protected File getCacheFile(final String url) {
+        return new File(Constants.DEFAULT_DOWNLOAD_DIR + File.separator + MD5Util.md5(url));
     }
 }

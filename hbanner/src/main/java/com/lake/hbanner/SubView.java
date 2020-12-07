@@ -14,7 +14,7 @@ public interface SubView {
      * 轮播控制，比如暂停，并自行计时播放下一张等操作。当view为视频时，
      * 推荐自行控制视频显示时间。
      */
-    void onShowStart(HBanner hBanner, int position);
+    void onShowStart(final HBanner hBanner, int position);
 
     /**
      * 结束显示
@@ -44,4 +44,11 @@ public interface SubView {
      * @return
      */
     View getPreView();
+
+    /**
+     * 同步所用的tag 标记，该接口只有在多banner协同下才有用
+     *
+     * @return
+     */
+    String getTag();
 }

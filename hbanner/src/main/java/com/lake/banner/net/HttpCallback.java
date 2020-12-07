@@ -1,22 +1,12 @@
 package com.lake.banner.net;
 
 
+import java.io.File;
+
 public interface HttpCallback {
-    /**
-     * 目前只支持 实体对象 string file类型的数据回调
-     * @param <T>
-     */
-    interface RequestHttpCallback<T> extends HttpCallback {
-        void success(T result);
+    void success(File result);
 
-        void failed(String Msg);
-    }
+    void failed(String Msg);
 
-    interface ProgressRequestHttpCallback<T> extends RequestHttpCallback<T> {
-        void progress(float progress, float count);
-    }
-
-    interface TimeRequestHttpCallback<T> extends RequestHttpCallback<T>{
-        void onTimeInfo(long time);
-    }
+    void progress(float progress, float count);
 }

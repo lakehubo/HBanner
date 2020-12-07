@@ -21,20 +21,7 @@ public class HttpClient extends HttpEvent implements HttpManager {
     }
 
     @Override
-    public <T> void Post(HttpParam param, HttpCallback.RequestHttpCallback<T> callback) {
-        param.setType(HttpParam.POST);
-        httpRequest(param, callback);
-    }
-
-    @Override
-    public <T> void Get(HttpParam param, HttpCallback.RequestHttpCallback<T> callback) {
-        param.setType(HttpParam.GET);
-        httpRequest(param, callback);
-    }
-
-    @Override
-    public <T> void Put(HttpParam param, HttpCallback.RequestHttpCallback<T> callback) {
-        param.setType(HttpParam.PUT);
+    public void Get(HttpParam param, HttpCallback callback) {
         httpRequest(param, callback);
     }
 }

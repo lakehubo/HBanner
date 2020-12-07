@@ -1,13 +1,21 @@
 package com.lake.banner.view;
 
 import android.content.Context;
+
 import androidx.viewpager.widget.ViewPager;
+
 import android.util.AttributeSet;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
+
+import java.util.ArrayList;
 
 
 public class BannerViewPager extends ViewPager {
     private boolean scrollable = true;
+    private final ArrayList<BannerViewPager>
+            syncViewPager = new ArrayList<>();
+
     public BannerViewPager(Context context) {
         super(context);
     }
@@ -16,9 +24,24 @@ public class BannerViewPager extends ViewPager {
         super(context, attrs);
     }
 
+    public void addSyncViewPager(BannerViewPager viewPager) {
+        syncViewPager.add(viewPager);
+    }
+
+    public void removeSyncViewPager(BannerViewPager viewPager) {
+        syncViewPager.remove(viewPager);
+    }
+
+    public void clearAllSyncPager(){
+        syncViewPager.clear();
+    }
+
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
-        if(this.scrollable) {
+        for (BannerViewPager pager : syncViewPager) {
+            pager.onTouchEvent(ev);
+        }
+        if (this.scrollable) {
             if (getCurrentItem() == 0 && getChildCount() == 0) {
                 return false;
             }
@@ -29,8 +52,35 @@ public class BannerViewPager extends ViewPager {
     }
 
     @Override
+    public void setCurrentItem(int item) {
+        super.setCurrentItem(item);
+        for (BannerViewPager pager : syncViewPager) {
+            pager.setCurrentItem(item);
+        }
+    }
+
+    @Override
+    public void setCurrentItem(int item, boolean smoothScroll) {
+        super.setCurrentItem(item, smoothScroll);
+        for (BannerViewPager pager : syncViewPager) {
+            pager.setCurrentItem(item, smoothScroll);
+        }
+    }
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        for (BannerViewPager pager : syncViewPager) {
+            pager.dispatchKeyEvent(event);
+        }
+        return super.dispatchKeyEvent(event);
+    }
+
+    @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
-        if(this.scrollable) {
+        for (BannerViewPager pager : syncViewPager) {
+            pager.onInterceptTouchEvent(ev);
+        }
+        if (this.scrollable) {
             if (getCurrentItem() == 0 && getChildCount() == 0) {
                 return false;
             }
@@ -41,6 +91,9 @@ public class BannerViewPager extends ViewPager {
     }
 
     public void setScrollable(boolean scrollable) {
+        for (BannerViewPager pager : syncViewPager) {
+            pager.scrollable = scrollable;
+        }
         this.scrollable = scrollable;
     }
 }

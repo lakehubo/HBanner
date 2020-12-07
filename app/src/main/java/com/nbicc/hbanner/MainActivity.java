@@ -1,38 +1,31 @@
 package com.nbicc.hbanner;
 
 import android.Manifest;
-import android.graphics.Color;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.Button;
 
-import androidx.viewpager.widget.ViewPager;
-
-import com.lake.banner.ImageGravityType;
-import com.lake.banner.VideoGravityType;
-import com.lake.banner.HBanner;
-import com.lake.banner.BannerStyle;
-import com.lake.banner.Transformer;
-import com.lake.banner.loader.ViewItemBean;
+import com.lake.banner.transformer.VerticalPageTransformer;
+import com.lake.banner.view.BannerViewPager;
+import com.lake.hbanner.HBanner;
 import com.lake.hbanner.ImageSubView;
 import com.lake.hbanner.SubView;
 import com.lake.hbanner.VideoSubView;
+import com.lake.hbanner.VideoViewType;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.lake.banner.BannerConfig.IMAGE;
-import static com.lake.banner.BannerConfig.VIDEO;
-
-public class MainActivity extends BaseActivity implements View.OnClickListener {
-    private HBanner banner;
-    private Button updateBtn, original;
-
-    private ViewPager viewPager;
+public class MainActivity extends BaseActivity implements View.OnClickListener,
+        ViewTreeObserver.OnGlobalLayoutListener {
+    private Button add, remove;
+    private BannerViewPager viewPager, viewPager2;
+    private HBanner hBanner, hBanner2;
+    private View rootView;
 
     public String[] NEEDED_PERMISSIONS = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -42,37 +35,19 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        banner = findViewById(R.id.banner);
-        updateBtn = findViewById(R.id.update);
-        original = findViewById(R.id.original);
-
+        rootView = LayoutInflater.from(this)
+                .inflate(R.layout.activity_main, null);
+        setContentView(rootView);
         viewPager = findViewById(R.id.viewpager);
-        viewPager.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                viewPager.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+        viewPager2 = findViewById(R.id.viewpager2);
 
-                com.lake.hbanner.HBanner hBanner = com.lake.hbanner.HBanner.create(viewPager);
+        rootView.getViewTreeObserver().addOnGlobalLayoutListener(this);
 
-                List<SubView> data = new ArrayList<>();
-                data.add(new ImageSubView(getBaseContext(), Color.BLACK));
-                data.add(new ImageSubView(getBaseContext(), Color.RED));
-                data.add(new ImageSubView(getBaseContext(), Color.YELLOW));
-                Uri path = Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.default1);
-                data.add(new VideoSubView(getBaseContext(), path));
+        add = findViewById(R.id.add);
+        remove = findViewById(R.id.remove);
 
-                hBanner.sources(data);
-                //自动播放，非自动播放无需调用此方法
-                hBanner.play();
-            }
-        });
-
-        updateBtn.setOnClickListener(this);
-        original.setOnClickListener(this);
-        verifyStoragePermissions(this);
-
-
+        add.setOnClickListener(this);
+        remove.setOnClickListener(this);
     }
 
     @Override
@@ -85,68 +60,103 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         init();
     }
 
-    private void init() {
-        List<ViewItemBean> list = new ArrayList<>();
+    @Override
+    public void onGlobalLayout() {
+        rootView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+        verifyStoragePermissions(this);
+    }
 
-        banner.setViews(list)
-                .setBannerAnimation(Transformer.Default)//换场方式
-                .setBannerStyle(BannerStyle.CIRCLE_INDICATOR_TITLE)//指示器模式
-                .setCache(true)//可以不用设置，默认为true
-                .setCachePath(getExternalFilesDir(Environment.DIRECTORY_MOVIES).getAbsolutePath() + File.separator + "hbanner")
-                .setVideoGravity(VideoGravityType.CENTER)//视频布局方式
-                .setImageGravity(ImageGravityType.FIT_XY)//图片布局方式
-                .setPageBackgroundColor(Color.TRANSPARENT)//设置背景
-                .setShowTitle(true)//是否显示标题
-                .setViewPagerIsScroll(true)//是否支持手滑
-                .start();
+    private void init() {
+        /**
+         * 在create banner前需要确保viewpager控件已经被创建
+         * 这里是双viewpager，为了方便所以直接对根布局进行视图创建
+         * 进行回调
+         */
+        hBanner = HBanner.create(viewPager);
+
+        List<SubView> data = new ArrayList<>();
+        data.add(new ImageSubView.Builder(getBaseContext())
+                .url("https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=4148675854,1608370142&fm=26&gp=0.jpg")
+                .duration(6000)
+                .build());
+        data.add(new ImageSubView.Builder(getBaseContext())
+                .resId(R.mipmap.b2)
+                .duration(5000)
+                .build());
+        data.add(new ImageSubView.Builder(getBaseContext())
+                .resId(R.mipmap.b3)
+                .duration(5000)
+                .build());
+        data.add(new VideoSubView.Builder(getBaseContext())
+                .url("https://v-cdn.zjol.com.cn/123468.mp4")
+                .gravity(VideoViewType.FULL)
+                .isSub(false)
+                .build());
+
+        hBanner2 = HBanner.create(viewPager2);
+        List<SubView> data2 = new ArrayList<>();
+        //被同步banner无需设置时间
+        data2.add(new ImageSubView.Builder(getBaseContext())
+                .url("https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1607078748657&di=32e2fa257aa53426f8ab1fbcb43e1325&imgtype=0&src=http%3A%2F%2F5b0988e595225.cdn.sohucs.com%2Fimages%2F20180629%2Fd444958986894a6994533eda59edb460.jpeg")
+                .build());
+        data2.add(new ImageSubView.Builder(getBaseContext())
+                .resId(R.mipmap.b2)
+                .build());
+        data2.add(new ImageSubView.Builder(getBaseContext())
+                .resId(R.mipmap.b3)
+                .build());
+        data2.add(new VideoSubView.Builder(getBaseContext())
+                .file(new File(Environment.getExternalStorageDirectory() + "/default1.mp4"))
+                .isSub(true)
+                .build());
+
+        hBanner2.sources(data2);
+        hBanner.sources(data);
+        //设置viewpager切换方式
+        viewPager.setPageTransformer(true, new VerticalPageTransformer());
+
+        hBanner.addSyncHBanner(hBanner2);
+        //开始显示或者自动播放
+        hBanner.play(true);
     }
 
     @Override
     protected void onResume() {
+        if (hBanner != null)
+            hBanner.play(true);
         super.onResume();
-        banner.onResume();
     }
 
     @Override
     protected void onPause() {
-        banner.onPause();
+        if (hBanner != null)
+            hBanner.pause(0);
         super.onPause();
-    }
-
-    @Override
-    protected void onStop() {
-        banner.onStop();
-        super.onStop();
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.update: {
-                List<ViewItemBean> list = new ArrayList<>();
-                Uri path1 = Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.default1);
-                Uri path2 = Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.default2);
-                list.add(new ViewItemBean(VIDEO, "标题1", path1, 6 * 1000));
-                list.add(new ViewItemBean(VIDEO, "标题2", path2, 2 * 1000));
-                list.add(new ViewItemBean(IMAGE, "标题3", R.mipmap.b2, 2 * 1000));
-                banner.update(list);
+            case R.id.add:
+                hBanner.addSubView(0, new ImageSubView.Builder(getBaseContext())
+                        .resId(R.mipmap.defalteimage)
+                        .duration(5000)
+                        .build());
+                hBanner.play(true);
                 break;
-            }
-            case R.id.original: {
-                String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/test.mp4";
-                List<ViewItemBean> list = new ArrayList<>();
-                Uri path1 = Uri.parse("https://v-cdn.zjol.com.cn/123468.mp4");
-                //Uri path2 = Uri.parse("https://v-cdn.zjol.com.cn/276982.mp4");
-                Uri imageUrl = Uri.parse("https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1579170629919&di=fc03a214795a764b4094aba86775fb8f&imgtype=jpg&src=http%3A%2F%2Fimg4.imgtn.bdimg.com%2Fit%2Fu%3D4061015229%2C3374626956%26fm%3D214%26gp%3D0.jpg");
-                list.add(new ViewItemBean(VIDEO, "标题1", path1, 12 * 1000));
-                list.add(new ViewItemBean(IMAGE, "标题2", imageUrl, 5 * 1000));
-                //list.add(new ViewItemBean(VIDEO, "标题3", path2, 6 * 1000));
-                list.add(new ViewItemBean(IMAGE, "标题4", R.mipmap.b1, 2 * 1000));
-                banner.update(list);
+            case R.id.remove:
+                hBanner.removeSyncHBanner(hBanner2);
+                hBanner.play(true);
                 break;
-            }
             default:
                 break;
         }
+    }
+
+    @Override
+    protected void onStop() {
+        if (hBanner != null)
+            hBanner = null;
+        super.onStop();
     }
 }

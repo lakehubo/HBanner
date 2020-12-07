@@ -1,19 +1,19 @@
 package com.lake.hbanner;
 
 import android.os.Handler;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 import com.lake.banner.uitls.LogUtils;
+import com.lake.banner.view.BannerViewPager;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static androidx.viewpager.widget.ViewPager.SCROLL_STATE_DRAGGING;
 import static androidx.viewpager.widget.ViewPager.SCROLL_STATE_IDLE;
@@ -32,15 +32,31 @@ import static androidx.viewpager.widget.ViewPager.SCROLL_STATE_SETTLING;
      * 传入的集合
      */
     private final List<SubView> items = new ArrayList<>();
-    /**
-     * 显示用的集合
-     */
+
     private final List<View> usingItems = new ArrayList<>();
     /**
-     * 当前位置，开始位置为1，实际为item中的0
+     * 当前位置，开始位置为0
      */
     private int curPosition = 1;
     private int lastPosition = -1;
+    /**
+     * 切换时间补正 大概会有几ms的偏移
+     */
+    private long timeOffset = 5;
+
+    private boolean isAuto = false;
+    /**
+     * 当前状态
+     */
+    private PlayStatus status = PlayStatus.NOT_RUNNING;
+    /**
+     * 待同步的附属banner
+     */
+    private final ArrayList<HBannerImp> attachedHBanners = new ArrayList<>();
+    /**
+     * 协同模式
+     */
+    private SyncMode mode = SyncMode.SYNC_BY_INDEX;
 
     private final PagerAdapter pagerAdapter = new PagerAdapter() {
         @Override
@@ -65,13 +81,19 @@ import static androidx.viewpager.widget.ViewPager.SCROLL_STATE_SETTLING;
         public boolean isViewFromObject(@NonNull View view, @NonNull Object object) {
             return view == object;
         }
+
+        @Override
+        public int getItemPosition(@NonNull Object object) {
+            return POSITION_NONE;
+        }
     };
     private final Handler handler;
 
-    private final Runnable autoRunnable = () -> showNext(true);
+    private final Runnable autoRunnable = () -> showNextInner(true);
 
     HBannerImp(ViewPager viewPager) {
         this.viewPager = viewPager;
+        attachedHBanners.clear();
         handler = viewPager.getHandler();
         viewPager.setAdapter(pagerAdapter);
 
@@ -82,25 +104,30 @@ import static androidx.viewpager.widget.ViewPager.SCROLL_STATE_SETTLING;
             public void onPageScrollStateChanged(int state) {
                 switch (state) {
                     case SCROLL_STATE_IDLE://final position
+                        LogUtils.e("lake", "onPageScrollStateChanged: idle");
+                        final int position = curPosition;
                         if (dragging) {
-                            final int position = curPosition;
                             if (position == usingItems.size() - 1) {
-                                viewPager.setCurrentItem(1, false);
-                                handler.postDelayed(autoRunnable, items.get(0).duration());
-                                LogUtils.e("lake","idel1");
+                                if (isAuto)
+                                    autoPlayAfter(items.get(0).duration() + timeOffset, "drag0");
                             } else if (position == 0) {
-                                viewPager.setCurrentItem(usingItems.size() - 2, false);
-                                handler.postDelayed(autoRunnable, items.get(items.size() - 1).duration());
-                                LogUtils.e("lake","idel2");
+                                if (isAuto)
+                                    autoPlayAfter(items.get(items.size() - 1).duration() + timeOffset, "drag1");
                             } else {
-                                handler.postDelayed(autoRunnable, items.get(getRealPosition(curPosition)).duration());
-                                LogUtils.e("lake","idel3");
+                                if (isAuto)
+                                    autoPlayAfter(items.get(getRealPosition(curPosition)).duration() + timeOffset, "drag2");
                             }
                             dragging = false;
                         }
+                        if (position == usingItems.size() - 1) {
+                            viewPager.setCurrentItem(1, false);
+                        } else if (position == 0) {
+                            viewPager.setCurrentItem(usingItems.size() - 2, false);
+                        }
                         break;
                     case SCROLL_STATE_DRAGGING://if user dragging it
-                        handler.removeCallbacks(autoRunnable);
+                        if (isAuto)
+                            stopPlay();
                         dragging = true;
                         break;
                     case SCROLL_STATE_SETTLING://the view is settling!
@@ -112,7 +139,7 @@ import static androidx.viewpager.widget.ViewPager.SCROLL_STATE_SETTLING;
 
             @Override
             public void onPageSelected(int position) {
-                Log.e("lake", "onPageSelected: " + position);
+                LogUtils.e("lake", "onPageSelected: " + position);
                 if (position > 0 && position < usingItems.size() - 1) {
                     if (lastPosition != -1)
                         items.get(getRealPosition(lastPosition)).onShowFinish();
@@ -127,92 +154,144 @@ import static androidx.viewpager.widget.ViewPager.SCROLL_STATE_SETTLING;
 
     @Override
     public void sources(List<SubView> subViews) {
+        if (subViews == null)
+            throw new NullPointerException("subViews is null!");
+        pause(0);
         items.clear();
         items.addAll(subViews);
-        updateUsingItems();
         notifyAdapter();
     }
 
     @Override
     public void remove(int position) {
+        if (position < 0 || position >= items.size())
+            throw new IndexOutOfBoundsException("the position is out of the subViews list!");
+        pause(0);
         items.remove(position);
-        updateUsingItems();
         notifyAdapter();
     }
 
     @Override
     public void addSubView(SubView sub) {
+        if (sub == null)
+            throw new NullPointerException("subView is null!");
+        pause(0);
         items.add(sub);
-        updateUsingItems();
         notifyAdapter();
     }
 
     @Override
-    public void addSubView(SubView sub, int position) {
+    public void addSubView(int position, SubView sub) {
+        if (position < 0 || position > items.size())
+            throw new IndexOutOfBoundsException("the position is out of the subViews list!");
+        pause(0);
         items.add(position, sub);
-        updateUsingItems();
         notifyAdapter();
     }
 
     @Override
     public void pause(long timeout) {
-        handler.removeCallbacks(autoRunnable);
+        isAuto = false;//暂停
+        stopPlay();
         if (timeout > 0) {
-            handler.postDelayed(autoRunnable, timeout);
+            autoPlayAfter(timeout, "pause");
+        } else {
+            status = PlayStatus.NOT_RUNNING;
         }
     }
 
     @Override
-    public void play() {
+    public void play(boolean auto) {
+        stopPlay();
         if (items.size() > 0) {
+            isAuto = auto;
+            initPosition();
             viewPager.setCurrentItem(curPosition);
-            handler.postDelayed(autoRunnable, items.get(getRealPosition(curPosition)).duration());
-        }
-    }
-
-    @Override
-    public void showNext(boolean auto) {
-        final int position = curPosition;
-        int prePosition = (position + 1) % (usingItems.size());
-        Log.e("lake", "run: " + prePosition);
-        boolean smoothScroll = isSmoothScroll(prePosition);
-        viewPager.setCurrentItem(prePosition, smoothScroll);
-        if (auto) {
-            if (smoothScroll) {
-                handler.postDelayed(autoRunnable, items.get(getRealPosition(prePosition)).duration());
-                Log.e("lake", "run: " + items.get(getRealPosition(prePosition)).duration());
-            } else {
-                handler.post(autoRunnable);
+            if (isAuto) {
+                status = PlayStatus.RUNNING;
+                autoPlayAfter(items.get(getRealPosition(curPosition)).duration(), "play");
             }
         }
     }
 
+    /**
+     * 重置位置
+     */
+    private void initPosition() {
+        curPosition = 1;
+        lastPosition = -1;
+    }
+
+    @Override
+    public void showNext(boolean auto) {
+        isAuto = auto;
+        showNextInner(auto);
+    }
+
+    private void showNextInner(boolean auto) {
+        if (items.size() == 0)
+            throw new RuntimeException("the subViews list size is 0!there is not any view to show!");
+        final int position = curPosition;
+        int prePosition = position + 1;
+        boolean smoothScroll = isSmoothScroll(position);
+        if (auto) {
+            if (smoothScroll) {
+                autoPlayAfter(items.get(getRealPosition(prePosition)).duration() + timeOffset, "auto");
+            }
+        }
+        viewPager.setCurrentItem(prePosition, smoothScroll);
+    }
+
     @Override
     public void setPosition(int position) {
+        if (position < 0 || position >= items.size())
+            throw new IndexOutOfBoundsException("the position is out of the subViews list!");
         viewPager.setCurrentItem(position + 1);
     }
 
     @Override
     public int getPosition() {
-        return getRealPosition(viewPager.getCurrentItem());
+        if (items.size() == 0)
+            return -1;
+        return viewPager.getCurrentItem();
     }
 
     @Override
     public SubView getCurrentSubView() {
-        return items.get(getRealPosition(curPosition));
+        if (items.size() == 0)
+            return null;
+        return items.get(curPosition);
     }
 
     @Override
     public SubView getSubView(int position) {
+        if (position < 0 || position >= items.size())
+            throw new IndexOutOfBoundsException("the position is out of the subViews list!");
         return items.get(position);
     }
 
+    @Override
+    public PlayStatus getBannerStatus() {
+        return status;
+    }
+
+    @Override
+    public void setTimeOffset(long time) {
+        timeOffset = time;
+    }
+
     private void notifyAdapter() {
+        updateUsingViewItems();
         pagerAdapter.notifyDataSetChanged();
+        initPosition();
+    }
+
+    private boolean isSmoothScroll(int position) {
+        return position != 0 && position != usingItems.size() - 1;
     }
 
     /**
-     * 0-6 转换为 0-4 因为人为加入2个子view，首尾滑动衔接
+     * 获取子元素实际显示的序号
      *
      * @param position
      * @return
@@ -220,32 +299,152 @@ import static androidx.viewpager.widget.ViewPager.SCROLL_STATE_SETTLING;
     private int getRealPosition(int position) {
         if (position == 0)
             return items.size() - 1;
-        if (position == usingItems.size() - 1)
+        if (position == usingItems.size() - 1) {
             return 0;
+        }
         return position - 1;
     }
 
     /**
-     * 是否有滑动动画
-     *
-     * @param position
-     * @return
+     * 更新显示列表
      */
-    private boolean isSmoothScroll(int position) {
-        if (position == 0 || position == usingItems.size() - 1)
-            return false;
-        return true;
+    private void updateUsingViewItems(int count) {
+        usingItems.clear();
+        usingItems.add(items.get(count - 1).getPreView());
+        for (int i = 0; i < count; i++) {
+            SubView view = items.get(i);
+            usingItems.add(view.getView());
+        }
+        usingItems.add(items.get(0).getPreView());
+    }
+
+    private void updateUsingViewItems() {
+        updateUsingViewItems(items.size());
     }
 
     /**
-     * 自动填充首尾元素
+     * 一旦触发该方法，则会一直循环调用autoRunnable方法，
+     * 除非调用stopPlay以停止循环
+     *
+     * @param time
+     * @param tag
      */
-    private void updateUsingItems() {
-        usingItems.clear();
-        usingItems.add(items.get(items.size() - 1).getPreView());//first
-        for (SubView subView : items) {
-            usingItems.add(subView.getView());
-        }
-        usingItems.add(items.get(0).getPreView());//end
+    private void autoPlayAfter(long time, String tag) {
+        LogUtils.d("auto", tag);
+        handler.postDelayed(autoRunnable, time);
+    }
+
+    /**
+     * 停止存放在主线程队列中的autoRunnable任务
+     */
+    private void stopPlay() {
+        handler.removeCallbacks(autoRunnable);
+    }
+
+    @Override
+    public void setSyncMode(SyncMode mode) {
+        this.mode = mode;
+    }
+
+    /**
+     * 添加协同banner
+     *
+     * @param hBanner
+     */
+    @Override
+    public void addSyncHBanner(HBanner hBanner) {
+        Objects.requireNonNull(hBanner);
+        pause(0);
+        checkAddedHBannerItem(hBanner);
+        initSyncItems();
+    }
+
+    @Override
+    public void addSyncHBanner(List<HBanner> hBanners) {
+        Objects.requireNonNull(hBanners);
+        pause(0);
+        for (HBanner banner : hBanners)
+            checkAddedHBannerItem(banner);
+        initSyncItems();
+    }
+
+    /**
+     * 移除协同banner
+     *
+     * @param hBanner
+     */
+    @Override
+    public void removeSyncHBanner(HBanner hBanner) {
+        Objects.requireNonNull(hBanner);
+        pause(0);
+        checkRemoveHBannerItem(hBanner);
+        initSyncItems();
+    }
+
+    @Override
+    public void removeSyncHBanner(List<HBanner> hBanners) {
+        Objects.requireNonNull(hBanners);
+        pause(0);
+        for (HBanner banner : hBanners)
+            checkRemoveHBannerItem(banner);
+        initSyncItems();
+    }
+
+    @Override
+    public void removeAllSyncHBanner() {
+        pause(0);
+        attachedHBanners.clear();
+        initSyncItems();
+    }
+
+    /**
+     * 检测banner的item数量，并更具tag进行协同时间分配计算
+     *
+     * @param hBanner
+     */
+    private void checkAddedHBannerItem(HBanner hBanner) {
+        if (!(hBanner instanceof HBannerImp))
+            throw new IllegalArgumentException("the banner type is not the correct original imp!its can not be added!");
+        HBannerImp otherImp = (HBannerImp) hBanner;
+        if (mode == SyncMode.SYNC_BY_INDEX) {
+            if (otherImp.items.size() < items.size())
+                throw new IllegalArgumentException("the items of banner by added is must be bigger or same as this banner!");
+            if (otherImp.items.size() > items.size()) {
+                otherImp.updateUsingViewItems(items.size());
+            }
+        } //else if (mode == SyncMode.SYNC_BY_TAG) {
+
+        //}
+        attachedHBanners.add(otherImp);
+    }
+
+    /**
+     * 移除协同项
+     *
+     * @param hBanner
+     */
+    private void checkRemoveHBannerItem(HBanner hBanner) {
+        if (!(hBanner instanceof HBannerImp))
+            throw new IllegalArgumentException("the banner type is not the correct original imp!its can not be remove!");
+        HBannerImp otherImp = (HBannerImp) hBanner;
+        attachedHBanners.remove(otherImp);
+    }
+
+    private void initSyncItems() {
+        BannerViewPager parentViewPager = convertViewPager();
+        parentViewPager.clearAllSyncPager();
+        if (mode == SyncMode.SYNC_BY_INDEX) {
+            for (HBannerImp banner : attachedHBanners) {
+                parentViewPager.addSyncViewPager(banner.convertViewPager());
+            }
+        } //else if (mode == SyncMode.SYNC_BY_TAG) {
+
+        //}
+    }
+
+    private BannerViewPager convertViewPager() {
+        if (!(viewPager instanceof BannerViewPager))
+            throw new IllegalArgumentException("if you want to use sync banner,please use BannerViewPager!");
+        return (BannerViewPager) viewPager;
     }
 }

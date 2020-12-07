@@ -1,37 +1,12 @@
-# HBanner
 
-非常感谢在issues里给我留言的小伙伴！还有很详细的bug复现描述，我会继续努力。目前部分朋友提出的视频切换图片闪烁的问题，经过一位伙伴的耐心测试发现是由于CustomVideoView类的离屏渲染导致，经过对CustomVideoView的外部包裹一层ViewGroup解决了该问题，在此非常感谢这位朋友的反馈以及意见！还有部分朋友出现的视频黑屏只有声音的问题，也已经复现找到，是由于切换动画引起的bug，原有的图片换场方式已经不再适用视频图片混播切换，故只保留了经测试可正常使用的横向切换和纵向切换动画。
 
-首先特别感谢原作者youth5201314的开源banner
+# HBanner（1.1.0-alpha）
 
-作者开源项目地址https://github.com/youth5201314/banner
+全新自制改良版视频/图片混播控件。这次版本已经完全更换了实现方式。所以剔除了原来所参考的项目代码，旧版本与所参考的banner控件存在冲突的问题应该不再存在。
 
-我在他的项目上做了一些更改，新增了上下切换动画，以及视频图片可以混合并且可自定义设置每个子视图显示的时间
+新版本目前所支持的功能：图片指定轮播时间，视频无需指定时间，播放结束后会自动切换，视频全屏/居中（原版本存在的视频有声音无显示问题可能是CustomVideoView全屏实现的方式所导致，具体问题可能是由于layout坐标错乱导致）
 
-如果控件对你有帮助，欢迎star，你的一个赞是我继续优化下去的动力
 
-##### 目前已优化项
-
-* 1.目前新增了在线视频缓存功能，当传入的地址对象为uri类型时，将对该地址的视频/图片是否下载到本地进行判断，默认会进行缓存并优先读取本地视频/图片进行轮播，若为本地视频/图片，请用string对象。
-* 2.视频加载模式从饿汉式改为了懒汉式。
-* 3.目前视频播放器采用的VideoView原生控件，所以支持的视频格式有限，推荐限定视频格式为mp4
-* 4.新增图片视频子布局参数设置，居中，拉伸，垂直居中（1.0.1）
-* 5.支持手滑切换页面（1.0.2）
-* 6.优化标题的传入方式（1.0.2）
-* 7.新增控件生命周期重启和暂停的方法（1.0.3）
-* 8.新增缓存地址自定义，解决关闭缓存下网络图片无法显示问题（1.0.3）
-* 9.降低sdk最低版本支持为16（1.0.4）
-* 10.修复设置缓存地址后，无法正确读取缓存视频和图片的bug（1.0.4）
-* 11.修改图片视频控件center和full布局设置的调用位置（1.0.4）
-* 12.修复标题显示不正确bug（1.0.5）
-* 13.修复部分视频网站无法下载缓存的问题（本版本下载https资源时，会绕过所有证书，信任所有https网站）（1.0.6）
-* 14.修复单个视频无限轮播问题（1.0.7）
-* 15.修复update崩溃bug（1.0.7）
-* 16.修复list为0时，调用控件生命周期引起的崩溃问题（1.0.7）
-* 17.拆分视频和图片的布局方式设置为setImageGravity以及setVideoGravity（1.0.8）
-* 18.修复竖方向切换时，视频相邻图片黑屏闪烁问题（1.0.8）
-* 19.去掉不适用的换场方法，原有的多个transform切换类对于有视频/图片混播不适用且会有视频黑屏bug存在，故只保留了横向以及纵向的切换动画，且不会导致视频黑屏（1.0.8）
-* 20.新增page背景颜色设置方法（1.0.8）
 
 ## 使用方式
 
@@ -40,20 +15,22 @@
 >在线视频的播放以及缓存需要相应的网络权限和存储器的读写权限，请在相应应用里添加以下权限，并动态申请
 
 ```xml
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+<uses-permission android:name="android.permission.INTERNET"/>
+<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 ```
+
+
 
 >Gradle 依赖添加方式
 
-```typescript
-    dependencies {
-        implementation 'com.lakehubo:hbanner:1.0.8'
-        ...
-    }
-    
+```groovy
+dependencies {
+  	implementation 'com.lakehubo:hbanner:1.1.0'
+}
 ```
+
+
 
 >Maven 依赖添加方式
 
@@ -61,236 +38,244 @@
 <dependency>
   <groupId>com.lakehubo</groupId>
   <artifactId>hbanner</artifactId>
-  <version>1.0.8</version>
+  <version>1.1.0</version>
   <type>pom</type>
 </dependency>
 ```
 
->简单使用hbanner
+
+
+#### HBanner主要接口方法说明
+
+该接口提供主要的操作方法，根据传入的viewpager并对其进行轮播的实现。
+
+| 方法名（参数）                              | 返回值     | 说明                                                         |
+| ------------------------------------------- | ---------- | ------------------------------------------------------------ |
+| sources(List\<SubView> subViews)            | void       | 轮播数据列表，在轮播状态下调用此方法会导致轮播暂停           |
+| remove(int position);                       | void       | 移除指定位置的subview，在轮播状态下调用此方法会导致轮播暂停  |
+| addSubView(SubView sub);                    | void       | 在结尾添加新的subview，在轮播状态下调用此方法会导致轮播暂停  |
+| addSubView(int position, SubView sub);      | void       | 在指定位置添加subview，在轮播状态下调用此方法会导致轮播暂停  |
+| pause(long timeout);                        | void       | 暂停轮播，timeout时间后自动继续，timeout为0表示永久暂停      |
+| play(boolean auto);                         | void       | 开始轮播,若当前存在暂停则继续当前位置进行播放                |
+| showNext(boolean auto);                     | void       | 手动切换到下一张view，auto是否后面自动播放                   |
+| setPosition(int position);                  | void       | 重置当前播放位置                                             |
+| getPosition();                              | void       | 获取当前播放位置                                             |
+| getCurrentSubView();                        | SubView    | 获取当前显示的子view                                         |
+| getSubView(int position);                   | SubView    | 获取指定位置的子view                                         |
+| getBannerStatus();                          | PlayStatus | 获取banner当前的状态                                         |
+| setTimeOffset(long time);                   | void       | 设置每次的轮播时间偏移，设置该值后会给所有的view加上该值，time单位ms |
+| setSyncMode(SyncMode mode);                 | void       | 设置多banner的同步模式，目前仅支持一种one by one模式         |
+| addSyncHBanner(HBanner hBanner);            | void       | 同步另一banner，多banner协同，根据传入的item序号进行同步，协同支持一种模式，<br>需要两个banner的item数量保持一致，否则会导致其中一个banner的item无法显示完整。 |
+| addSyncHBanner(List\<HBanner> hBanners);    | void       | 参考以上，添加复数个banner                                   |
+| removeSyncHBanner(HBanner hBanner);         | void       | 移除同步的banner                                             |
+| removeSyncHBanner(List\<HBanner> hBanners); | void       | 参考以上，移除复数个banner                                   |
+| removeAllSyncHBanner();                     | void       | 移除所有同步的banner                                         |
+| create(ViewPager viewPager)                 | HBanner    | 利用viewPager创建HBanner接口。注：多次调用会创建多个HBanner实例。 |
+
+
+
+##### SubView接口说明
+
+该接口为传入HBanner轮播对象，目前控件自带一个图片对象和视频对象，你也可以自己继承该接口实现自己自定义的轮播对象。
+
+| 方法名（参数）                                    | 返回值 | 说明                                                         |
+| ------------------------------------------------- | ------ | ------------------------------------------------------------ |
+| onShowStart(final HBanner hBanner, int position); | void   | 轮播开始显示的回调，该方法会返回HBanner对象，此时你可以在这里接管轮播控制，<br>比如暂停，并自行计时播放下一张等操作。当view为视频时，推荐自行控制视频显示时间。 |
+| onShowFinish();                                   | void   | 轮播对象结束显示的回调。                                     |
+| duration();                                       | long   | 指定当前轮播对象的显示的时间，单位：ms                       |
+| getView();                                        | View   | HBanner获取轮播对象的接口。该返回值为控件轮播时所显示的View  |
+| getPreView();                                     | View   | 当前view不为ImageView时候，比如为VideoView，则需要覆盖此方法，<br>返回一张图片替代VideoView的显示，该方法主要为了视频未加载完全时<br>候的显示以及循环播放的首尾画面的过度。 |
+| getTag();                                         | String | 同步所用的tag 标记，该接口只有在多banner协同下才有用。目前版本无任何作用。 |
+
+
+
+目前控件内实现了默认的图片轮播对象：ImageSubView
+
+以及默认的视频轮播对象：VideoSubView
+
+##### ImageSubView简单说明
+
+* 通过起内部Builder类进行参数初始化和构造。
+
+* ```java
+  ImageSubView imge = new ImageSubView.Builder(getBaseContext())
+                  		.resId(R.mipmap.b2)
+                  		.duration(5000)
+                  		.build();
+  ```
+
+* Builder构造类方法参数说明
+
+| 方法                         | 参数类型  | 说明                                    |
+| ---------------------------- | --------- | --------------------------------------- |
+| gravity(ScaleType scaleType) | ScaleType | 图片布局方式（ImageView.ScaleType）     |
+| url(String url)              | String    | 图片来源的网络地址                      |
+| file(File file)              | File      | 图片来源的文件                          |
+| resId(@DrawableRes int id)   | int       | 图片来源的资源id（R.mipmap/R.drawable） |
+| duration(long show)          | long      | 图片显示时间（单位ms，默认值5000）      |
+
+
+
+##### VideoSubView简单说明
+
+* 通过起内部Builder类进行参数初始化和构造。
+
+* ```java
+  VideoSubView view = new VideoSubView.Builder(getBaseContext())
+                  		.url("https://v-cdn.zjol.com.cn/123468.mp4")
+                  		.Gravity(VideoViewType.FULL)
+                  		.isSub(false)
+                  		.build();
+  ```
+
+* Builder构造类方法参数说明
+
+| 方法                        | 参数类型      | 说明                                            |
+| --------------------------- | ------------- | ----------------------------------------------- |
+| gravity(VideoViewType type) | VideoViewType | 视频布局方式，目前支持两种FULL和CENTER          |
+| isSub(boolean sub)          | boolean       | 是否属于被同步banner中的视频控件，默认值为false |
+| file(File file)             | File          | 视频来源的文件                                  |
+| url(String url)             | String        | 视频来源的网络地址                              |
+
+> 注：file和url必须有其中一个有效值，否则会抛出参数错误异常
+
+
+
+##### 自带换场方式的对象函数
+
+| 函数名                  | 说明     |
+| ----------------------- | -------- |
+| DefaultTransformer      | 横向切换 |
+| VerticalPageTransformer | 纵向切换 |
+
+ViewPager函数设置轮播换场方式
 
 ```java
-    List<ViewItemBean> list = new ArrayList<>();
-		
-    banner.setViews(list)
-                .setBannerAnimation(Transformer.Default)//换场方式
-                .setBannerStyle(BannerStyle.CIRCLE_INDICATOR_TITLE)//指示器模式
-                .setCache(true)//可以不用设置，默认为true
-                .setCachePath(getExternalFilesDir(Environment.DIRECTORY_MOVIES).getAbsolutePath() + File.separator + "hbanner")
-                .setVideoGravity(VideoGravityType.CENTER)//视频布局方式
-                .setImageGravity(ImageGravityType.FIT_XY)//图片布局方式
-                .setPageBackgroundColor(Color.TRANSPARENT)//设置背景
-                .setShowTitle(true)//是否显示标题
-                .setViewPagerIsScroll(true)//是否支持手滑
-                .start();
+//自行通过设置ViewPager的换场动画方法即可，无需通过控件。
+//设置viewpager切换方式
+viewPager.setPageTransformer(true, new VerticalPageTransformer());
 ```
 
->ViewItemBean说明
 
-```java
-ViewItemBean(int type, Object url, int time)
-int type;//子view类型
-type = BannerConfig.IMAGE//图片类型
-type = BannerConfig.VIDEO//视频类型
-Object url;//资源地址
-url = Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.default1);//app内固定视频资源
-url = Environment.getExternalStorageDirectory().getAbsolutePath()+"/test.mp4";//外部存储路径下视频/图片文件
-url = R.mipmap.b1;//资源内图片
-int time = 5 * 1000//5s	(单位ms)
 
-//若要显示标题需要设置该view的标题
-ViewItemBean(int type, String title, Object url, int time)
-```
-
-> 换场方式
-
-```java
-Transformer.Default//默认横向切换
-Transformer.Vertical//纵向切换
-setBannerAnimation(Transformer.Vertical);//纵向切换
-```
-
-> 缓存功能说明
-
-若添加了网络地址的视频，必须开启缓存才能正常缓存视频文件到本地
-
-```java
-setCache(true)//可以不用设置，默认为true
-setCachePath(String path)//设置缓存的文件地址  Android10以上的target需要使用应用内dir，Environment.getExternalStorageDirectory()在Android10已经无法正常获取权限和读写
-```
-
-> 指示器
-
-若需要显示标题，需要设置带title的指示器模式
-
-```java
-BannerStyle.NOT_INDICATOR
-BannerStyle.CIRCLE_INDICATOR
-BannerStyle.NUM_INDICATOR
-BannerStyle.NUM_INDICATOR_TITLE
-BannerStyle.CIRCLE_INDICATOR_TITLE
-BannerStyle.CIRCLE_INDICATOR_TITLE_INSIDE
-```
-
-> 子view的图像视频显示布局
-
-最新的1.0.8版本已经分开了视频和图片的布局设置
-
-```java
-VideoGravityType.CENTER//居中
-VideoGravityType.CENTER_HORIZONTAL//垂直居中
-VideoGravityType.FULL_SCREEN//全屏
-setVideoGravity(VideoGravityType.CENTER)//视频布局方式
-  
-ImageGravityType.MATRIX//以下均对应ImageView.ScaleType
-ImageGravityType.FIT_XY
-ImageGravityType.FIT_START
-ImageGravityType.FIT_CENTER
-ImageGravityType.FIT_END
-ImageGravityType.CENTER
-ImageGravityType.CENTER_CROP
-ImageGravityType.CENTER_INSIDE
-setImageGravity(ImageGravityType.FIT_XY)//图片布局方式
-```
-
-> 设置page背景
-
-```java
-setPageBackgroundColor(int Color)//颜色设置背景
-setPageBackground(Drawable background)//drawable设置背景
-setPageBackgroundResource(int resource)//使用资源设置背景
-```
-
-> hbanner对应生命周期调用对应方法，可优化hbanner的使用体验
+对应生命周期回调中的控件推荐设置
 
 ```java
 @Override
 protected void onResume() {
+    if (hBanner != null)
+        hBanner.play(true);
     super.onResume();
-    banner.onResume();
 }
 
 @Override
 protected void onPause() {
-    banner.onPause();
+    if (hBanner != null)
+        hBanner.pause(0);
     super.onPause();
 }
 
 @Override
 protected void onStop() {
-    banner.onStop();
+    if (hBanner != null)
+        hBanner = null;
     super.onStop();
 }
 ```
 
 
 
-##### 版本1.0.1
+新版banner，目前去掉了指示器标题栏，推荐自行实现需要的指示器和标题等。
 
->更新内容：
+##### 使用示例代码(项目demo)：
 
-* 1.新增图片/视频居中或者拉伸布局设置
-
-##### 版本1.0.2
-
->更新内容：
-
-* 1.新增手势滑动切换 默认开始手势滑动模式，若不需要请手动设置为false
-* 2.优化标题的传入方式
-
-##### 版本1.0.3
-
->更新内容：
-
-* 1.新增控件生命周期重启和暂停的方法
-* 2.新增缓存地址自定义，解决关闭缓存下网络图片无法显示问题
-
-
-
-##### 自定义图片加载器
-
-* 关于使用自定义视频控件以及图片控件可以自行实现VideoViewLoaderInterface以及ViewLoaderInterface接口后，
-  通过setVideoLoader(VideoViewLoaderInterface videoLoader)以及setImageLoader(ViewLoaderInterface imageLoader)
-  方法实现替换
-
-```
+ ```java
 /**
- * 例如自定义使用glide加载图片代理实现
+ * 在create banner前需要确保viewpager控件已经被创建
+ * 这里是双viewpager，为了方便所以直接对根布局进行视图创建
+ * 进行回调
  */
-public class MyImageLoader implements ViewLoaderInterface<ImageView> {
-    public ImageLoader() {
-    }
+HBanner hBanner = HBanner.create(viewPager);
 
-    @Override
-    public ImageView createView(Context context, int gravity) {
-        ImageView imageView = new ImageView(context);
-        switch (gravity) {
-            case BannerGravity.CENTER:
-                 imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
-                 break;
-            case BannerGravity.FULL_SCREEN:
-                 imageView.setScaleType(ImageView.ScaleType.FIT_XY);
-                 break;
-        }
-        return imageView;
-    }
+List<SubView> data = new ArrayList<>();
+data.add(new ImageSubView.Builder(getBaseContext())
+         .url("https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=4148675854,1608370142&fm=26&gp=0.jpg")
+         .duration(6000)
+         .build());
+data.add(new ImageSubView.Builder(getBaseContext())
+         .resId(R.mipmap.b2)
+         .duration(5000)
+         .build());
+data.add(new ImageSubView.Builder(getBaseContext())
+         .resId(R.mipmap.b3)
+         .duration(5000)
+         .build());
+data.add(new VideoSubView.Builder(getBaseContext())
+         .url("https://v-cdn.zjol.com.cn/123468.mp4")
+         .gravity(VideoViewType.FULL)
+         .isSub(false)
+         .build());
 
-    @Override//view预加载时候调用，并非正在显示
-    public void onPrepared(Context context, Object path, ImageView imageView, String cachePath) {
-        //Glide 加载图片简单用法
-        Glide.with(context).load(path).into(imageView);
-    }
+hBanner.sources(data);
+//设置viewpager切换方式
+viewPager.setPageTransformer(true, new VerticalPageTransformer());
+      
+//开始显示或者自动播放
+hBanner.play(true);
+ ```
 
-    @Override
-    public void onDestroy(ImageView imageView) {
-        System.gc();
-    }
-}
 
-banner.setImageLoader(new MyImageLoader());
 
-//替换视频控件同理  
-```
+##### 如果需要**多banner同步**轮播
 
-##### 版本1.0.4
-
->更新内容：
-
-* 1.降低sdk最低版本支持为16
-* 2.修复设置缓存地址后，无法正确读取缓存视频和图片的bug
-* 3.修改图片视频控件center和full布局设置的调用位置
-
-##### 版本1.0.5
-
->更新内容：
-
-* 1.修复标题显示顺序不对应bug
-
-##### 版本1.0.6
-
->更新内容：
-
-* 1.修复部分视频网站无法下载缓存的问题（本版本下载https资源时，会绕过所有证书，信任所有https网站，且在视频未完全缓存时，视频可能无法正常播放，当视频缓存完成，轮播到当前视频时，会正常播放！）
-
-##### 版本1.0.7
-
->更新内容：
-
-* 1.修复单个视频无限轮播问题
-* 2.修复update崩溃bug（该版本尚遗留问题待解决，当update列表中第一个item为video类型时，操作update方法后，新一轮的轮播可能会出现首视频暂停不自动播放的问题，轮播一轮后会正常）
-* 3.修复list为0时，调用控件生命周期引起的崩溃问题
+需要保证所有banner都使用包内所提供的**BannerViewPager**（如果是单一banner，使用ViewPager即可）。
 
 ```java
-List<ViewItemBean> list = new ArrayList<>();
-list.add(...)//add your new item
-....
-banner.update(list);//update it!
+HBanner hBanner = HBanner.create(viewPager);
+
+List<SubView> data = new ArrayList<>();
+data.add(new ImageSubView.Builder(getBaseContext())
+         .url("https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=4148675854,1608370142&fm=26&gp=0.jpg")
+         .duration(6000)
+         .build());
+data.add(new ImageSubView.Builder(getBaseContext())
+         .resId(R.mipmap.b2)
+         .duration(5000)
+         .build());
+data.add(new ImageSubView.Builder(getBaseContext())
+         .resId(R.mipmap.b3)
+         .duration(5000)
+         .build());
+data.add(new VideoSubView.Builder(getBaseContext())
+         .url("https://v-cdn.zjol.com.cn/123468.mp4")
+         .gravity(VideoViewType.FULL)
+         .isSub(false)
+         .build());
+
+hBanner.sources(data);
+
+HBanner hBanner2 = HBanner.create(viewPager2);
+
+List<SubView> data2 = new ArrayList<>();
+//被同步banner无需设置时间
+data2.add(new ImageSubView.Builder(getBaseContext())
+          .url("https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1607078748657&di=32e2fa257aa53426f8ab1fbcb43e1325&imgtype=0&src=http%3A%2F%2F5b0988e595225.cdn.sohucs.com%2Fimages%2F20180629%2Fd444958986894a6994533eda59edb460.jpeg")
+          .build());
+data2.add(new ImageSubView.Builder(getBaseContext())
+          .resId(R.mipmap.b2)
+          .build());
+data2.add(new ImageSubView.Builder(getBaseContext())
+          .resId(R.mipmap.b3)
+          .build());
+data2.add(new VideoSubView.Builder(getBaseContext())
+          .file(new File(Environment.getExternalStorageDirectory() + "/default1.mp4"))
+          .isSub(true)
+          .build());
+
+hBanner2.sources(data2);
+
+hBanner.addSyncHBanner(hBanner2);
+//多协同，只需主banner播放即可，其他banner会跟随切换。
+hBanner.play(true);
 ```
 
-##### 版本1.0.8
-
->更新内容：
-
-* 1.拆分视频和图片的布局方式设置为setImageGravity以及setVideoGravity
-* 2.修复竖方向切换时，视频相邻图片黑屏闪烁问题
-* 3.去掉不适用的换场方法，原有的多个transform切换类对于有视频/图片混播不适用且会有视频黑屏bug存在，故只保留了横向以及纵向的切换动画，且不会导致视频黑屏
-* 4.新增page背景颜色设置方法
