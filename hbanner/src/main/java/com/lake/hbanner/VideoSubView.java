@@ -248,7 +248,7 @@ public class VideoSubView extends ShowView {
         }
 
         public Builder isSub(boolean sub) {
-            this.isSub = isSub;
+            this.isSub = sub;
             return this;
         }
 

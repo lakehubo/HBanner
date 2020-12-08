@@ -18,8 +18,6 @@ import com.lake.banner.uitls.LogUtils;
 import android.widget.ImageView.ScaleType;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 
 /**
  * @author lake

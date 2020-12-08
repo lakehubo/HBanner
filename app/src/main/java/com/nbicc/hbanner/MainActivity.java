@@ -106,7 +106,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                 .resId(R.mipmap.b3)
                 .build());
         data2.add(new VideoSubView.Builder(getBaseContext())
-                .file(new File(Environment.getExternalStorageDirectory() + "/default1.mp4"))
+                .url("https://v-cdn.zjol.com.cn/276982.mp4")
                 .isSub(true)
                 .build());
 
