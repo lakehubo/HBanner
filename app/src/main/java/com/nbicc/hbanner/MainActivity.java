@@ -2,7 +2,6 @@ package com.nbicc.hbanner;
 
 import android.Manifest;
 import android.os.Bundle;
-import android.os.Environment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewTreeObserver;
@@ -10,7 +9,6 @@ import android.widget.Button;
 import android.widget.ImageView;
 
 import com.lake.banner.transformer.DefaultTransformer;
-import com.lake.banner.transformer.VerticalPageTransformer;
 import com.lake.banner.view.BannerViewPager;
 import com.lake.hbanner.HBanner;
 import com.lake.hbanner.ImageSubView;
@@ -18,7 +16,6 @@ import com.lake.hbanner.SubView;
 import com.lake.hbanner.VideoSubView;
 import com.lake.hbanner.VideoViewType;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 

@@ -6,6 +6,26 @@
 
 新版本目前所支持的功能：图片指定轮播时间，视频无需指定时间，播放结束后会自动切换，视频全屏/居中（原版本存在的视频有声音无显示问题可能是CustomVideoView全屏实现的方式所导致，具体问题可能是由于layout坐标错乱导致）
 
+目前库已迁移至mavenCentral，所以在根目录下的`buidl.gradle`配置文件下需要添加`mavenCentral`仓库源，`jecnter`仓库源目前已无法更新库以及上传库，且在后面会停止服务，需要注意！
+
+```groovy
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    ...
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+		...
+}
+```
+
 
 
 ## 使用方式
@@ -26,7 +46,7 @@
 
 ```groovy
 dependencies {
-  	implementation 'com.lakehubo:hbanner:1.1.1-alpha'
+  	implementation 'io.github.lakehubo:com.lakehubo.hbanner:1.1.1-alpha'
 }
 ```
 
@@ -36,8 +56,8 @@ dependencies {
 
 ```xml
 <dependency>
-  <groupId>com.lakehubo</groupId>
-  <artifactId>hbanner</artifactId>
+  <groupId>io.github.lakehubo</groupId>
+  <artifactId>com.lakehubo.hbanner</artifactId>
   <version>1.1.1-alpha</version>
   <type>pom</type>
 </dependency>
@@ -72,6 +92,7 @@ dependencies {
 | removeAllSyncHBanner()                     | void       | 移除所有同步的banner                                         |
 | create(ViewPager viewPager)                | HBanner    | 利用viewPager创建HBanner接口。注：多次调用会创建多个HBanner实例。 |
 | release()                                  | void       | 停止播放并释放轮播资源                                       |
+| isAuto()                                   | boolean    | 当前是否为自动播放（pause方法会导致该值改变）                |
 
 
 
@@ -79,14 +100,14 @@ dependencies {
 
 该接口为传入HBanner轮播对象，目前控件自带一个图片对象和视频对象，你也可以自己继承该接口实现自己自定义的轮播对象。
 
-| 方法名（参数）                                   | 返回值 | 说明                                                         |
-| ------------------------------------------------ | ------ | ------------------------------------------------------------ |
-| onShowStart(final HBanner hBanner, int position) | void   | 轮播开始显示的回调，该方法会返回HBanner对象，此时你可以在这里接管轮播控制，<br>比如暂停，并自行计时播放下一张等操作。当view为视频时，推荐自行控制视频显示时间。 |
-| onShowFinish()                                   | void   | 轮播对象结束显示的回调。                                     |
-| duration()                                       | long   | 指定当前轮播对象的显示的时间，单位：ms                       |
-| getView()                                        | View   | HBanner获取轮播对象的接口。该返回值为控件轮播时所显示的View  |
-| getPreView()                                     | View   | 当前view不为ImageView时候，比如为VideoView，则需要覆盖此方法，<br>返回一张图片替代VideoView的显示，该方法主要为了视频未加载完全时<br>候的显示以及循环播放的首尾画面的过度。 |
-| getTag()                                         | String | 同步所用的tag 标记，该接口只有在多banner协同下才有用。目前版本无任何作用。 |
+| 方法名（参数）                                   | 返回值  | 说明                                                         |
+| ------------------------------------------------ | ------- | ------------------------------------------------------------ |
+| onShowStart(final HBanner hBanner, int position) | void    | 轮播开始显示的回调，该方法会返回HBanner对象，此时你可以在这里接管轮播控制，<br>比如暂停，并自行计时播放下一张等操作。当view为视频时，推荐自行控制视频显示时间。 |
+| onShowFinish()                                   | boolean | 轮播对象结束显示的回调，返回是否为自动播放模式               |
+| duration()                                       | long    | 指定当前轮播对象的显示的时间，单位：ms                       |
+| getView()                                        | View    | HBanner获取轮播对象的接口。该返回值为控件轮播时所显示的View  |
+| getPreView()                                     | View    | 当前view不为ImageView时候，比如为VideoView，则需要覆盖此方法，<br>返回一张图片替代VideoView的显示，该方法主要为了视频未加载完全时<br>候的显示以及循环播放的首尾画面的过度。 |
+| getTag()                                         | String  | 同步所用的tag 标记，该接口只有在多banner协同下才有用。目前版本无任何作用。 |
 
 
 
