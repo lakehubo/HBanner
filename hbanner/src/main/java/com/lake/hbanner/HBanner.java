@@ -150,4 +150,15 @@ public interface HBanner {
     static HBanner create(ViewPager viewPager) {
         return new HBannerImp(viewPager);
     }
+
+    /**
+     * 释放所有资源以及清空绑定的viewPager
+     */
+    void release();
+
+    /**
+     * 是否为自动播放
+     * @return
+     */
+    boolean isAuto();
 }

@@ -94,6 +94,7 @@ import static androidx.viewpager.widget.ViewPager.SCROLL_STATE_SETTLING;
     HBannerImp(ViewPager viewPager) {
         this.viewPager = viewPager;
         attachedHBanners.clear();
+        checkViewAttached(viewPager);
         handler = viewPager.getHandler();
         viewPager.setAdapter(pagerAdapter);
 
@@ -104,7 +105,7 @@ import static androidx.viewpager.widget.ViewPager.SCROLL_STATE_SETTLING;
             public void onPageScrollStateChanged(int state) {
                 switch (state) {
                     case SCROLL_STATE_IDLE://final position
-                        LogUtils.e("lake", "onPageScrollStateChanged: idle");
+                        LogUtils.e("lake", "onPageScrollStateChanged: idle auto=" + isAuto);
                         final int position = curPosition;
                         if (dragging) {
                             if (position == usingItems.size() - 1) {
@@ -120,14 +121,13 @@ import static androidx.viewpager.widget.ViewPager.SCROLL_STATE_SETTLING;
                             dragging = false;
                         }
                         if (position == usingItems.size() - 1) {
-                            viewPager.setCurrentItem(1, false);
+                            viewPager.setCurrentItem(1, false);//false会缺失idle回调
                         } else if (position == 0) {
                             viewPager.setCurrentItem(usingItems.size() - 2, false);
                         }
                         break;
                     case SCROLL_STATE_DRAGGING://if user dragging it
-                        if (isAuto)
-                            stopPlay();
+                        stopPlay();
                         dragging = true;
                         break;
                     case SCROLL_STATE_SETTLING://the view is settling!
@@ -140,9 +140,11 @@ import static androidx.viewpager.widget.ViewPager.SCROLL_STATE_SETTLING;
             @Override
             public void onPageSelected(int position) {
                 LogUtils.e("lake", "onPageSelected: " + position);
+                if (lastPosition != -1 && lastPosition != position)
+                    isAuto = items.get(getRealPosition(lastPosition)).onShowFinish();
+
                 if (position > 0 && position < usingItems.size() - 1) {
-                    if (lastPosition != -1)
-                        items.get(getRealPosition(lastPosition)).onShowFinish();
+                    LogUtils.e("lake", "onShowFinish: " + lastPosition + ":" + isAuto);
                     SubView subView = items.get(getRealPosition(position));
                     subView.onShowStart(HBannerImp.this, getRealPosition(position));
                     lastPosition = position;
@@ -398,7 +400,7 @@ import static androidx.viewpager.widget.ViewPager.SCROLL_STATE_SETTLING;
     }
 
     /**
-     * 检测banner的item数量，并更具tag进行协同时间分配计算
+     * 检测banner的item数量，并根据tag进行协同时间分配计算
      *
      * @param hBanner
      */
@@ -446,5 +448,30 @@ import static androidx.viewpager.widget.ViewPager.SCROLL_STATE_SETTLING;
         if (!(viewPager instanceof BannerViewPager))
             throw new IllegalArgumentException("if you want to use sync banner,please use BannerViewPager!");
         return (BannerViewPager) viewPager;
+    }
+
+    /**
+     * 检测view是否已加载
+     *
+     * @param viewPager
+     */
+    private void checkViewAttached(ViewPager viewPager) {
+        if (!viewPager.isAttachedToWindow())
+            throw new IllegalArgumentException("your viewPager has not attached,it will can not get the handler!");
+    }
+
+    @Override
+    public void release() {
+        stopPlay();
+        attachedHBanners.clear();
+        usingItems.clear();
+        viewPager.clearOnPageChangeListeners();
+        viewPager.setAdapter(null);
+        viewPager.removeAllViews();
+    }
+
+    @Override
+    public boolean isAuto() {
+        return isAuto;
     }
 }

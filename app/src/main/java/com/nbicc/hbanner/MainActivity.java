@@ -7,7 +7,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.Button;
+import android.widget.ImageView;
 
+import com.lake.banner.transformer.DefaultTransformer;
 import com.lake.banner.transformer.VerticalPageTransformer;
 import com.lake.banner.view.BannerViewPager;
 import com.lake.hbanner.HBanner;
@@ -20,9 +22,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends BaseActivity implements View.OnClickListener,
-        ViewTreeObserver.OnGlobalLayoutListener {
-    private Button add, remove;
+public class MainActivity extends BaseActivity implements View.OnClickListener, ViewTreeObserver.OnGlobalLayoutListener {
+    private Button add, remove, play, release;
     private BannerViewPager viewPager, viewPager2;
     private HBanner hBanner, hBanner2;
     private View rootView;
@@ -45,9 +46,19 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
 
         add = findViewById(R.id.add);
         remove = findViewById(R.id.remove);
+        play = findViewById(R.id.play);
+        release = findViewById(R.id.release);
 
         add.setOnClickListener(this);
         remove.setOnClickListener(this);
+        play.setOnClickListener(this);
+        release.setOnClickListener(this);
+    }
+
+    @Override
+    public void onGlobalLayout() {
+        rootView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+        verifyStoragePermissions(MainActivity.this);
     }
 
     @Override
@@ -58,12 +69,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
     @Override
     void afterPermissions() {
         init();
-    }
-
-    @Override
-    public void onGlobalLayout() {
-        rootView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-        verifyStoragePermissions(this);
     }
 
     private void init() {
@@ -77,6 +82,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
         List<SubView> data = new ArrayList<>();
         data.add(new ImageSubView.Builder(getBaseContext())
                 .url("https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=4148675854,1608370142&fm=26&gp=0.jpg")
+                .gravity(ImageView.ScaleType.FIT_XY)
                 .duration(6000)
                 .build());
         data.add(new ImageSubView.Builder(getBaseContext())
@@ -90,14 +96,29 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
         data.add(new VideoSubView.Builder(getBaseContext())
                 .url("https://v-cdn.zjol.com.cn/123468.mp4")
                 .gravity(VideoViewType.FULL)
+                .playOffset(600)//让缓存图片显示600ms后再播放，可解决videoview启动时候闪烁问题
                 .isSub(false)
                 .build());
+        hBanner.sources(data);
+        //设置viewpager切换方式
+        viewPager.setPageTransformer(true, new DefaultTransformer());
 
+//        init2();
+//        syncTest();
+
+        //开始显示或者自动播放
+        hBanner.play(true);
+    }
+
+    /**
+     * 初始化第二个banner
+     */
+    private void init2() {
         hBanner2 = HBanner.create(viewPager2);
         List<SubView> data2 = new ArrayList<>();
         //被同步banner无需设置时间
         data2.add(new ImageSubView.Builder(getBaseContext())
-                .url("https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1607078748657&di=32e2fa257aa53426f8ab1fbcb43e1325&imgtype=0&src=http%3A%2F%2F5b0988e595225.cdn.sohucs.com%2Fimages%2F20180629%2Fd444958986894a6994533eda59edb460.jpeg")
+                .url("https://image.playgame.wiki/2020/04/01/7ff9c9c64c/8a37fa61dc208e51c558c087173b80a8.jpg")
                 .build());
         data2.add(new ImageSubView.Builder(getBaseContext())
                 .resId(R.mipmap.b2)
@@ -111,13 +132,13 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                 .build());
 
         hBanner2.sources(data2);
-        hBanner.sources(data);
-        //设置viewpager切换方式
-        viewPager.setPageTransformer(true, new VerticalPageTransformer());
+    }
 
+    /**
+     * 同步测试
+     */
+    private void syncTest() {
         hBanner.addSyncHBanner(hBanner2);
-        //开始显示或者自动播放
-        hBanner.play(true);
     }
 
     @Override
@@ -147,6 +168,12 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
             case R.id.remove:
                 hBanner.removeSyncHBanner(hBanner2);
                 hBanner.play(true);
+                break;
+            case R.id.play:
+                init();
+                break;
+            case R.id.release:
+                hBanner.release();
                 break;
             default:
                 break;

@@ -28,6 +28,7 @@ import java.io.File;
  */
 public abstract class ShowView implements SubView {
     protected ImageView mImageCache;
+    protected boolean auto = false;
 
     public ShowView(Context context) {
         mImageCache = new ImageView(context);
@@ -35,11 +36,12 @@ public abstract class ShowView implements SubView {
 
     @Override
     public void onShowStart(final HBanner hBanner, int position) {
-
+        this.auto = hBanner.isAuto();
     }
 
     @Override
-    public void onShowFinish() {
+    public boolean onShowFinish() {
+        return auto;
     }
 
     /**

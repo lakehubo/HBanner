@@ -15,6 +15,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.VideoView;
 
 import androidx.annotation.NonNull;
@@ -43,40 +44,43 @@ public class VideoSubView extends ShowView {
     private final UpdateHandler updateHandler;
     private final Context context;
     private final VideoViewType viewType;
+    private final long playOffset;
     //当该view是处于被同步的banner中时候需要设置为true
     private final boolean isSubChange;
 
-    private VideoSubView(Context context, File file, VideoViewType viewType, boolean isSubChange) {
-        super(context);
-        this.context = context;
-        this.viewType = viewType;
-        this.isSubChange = isSubChange;
+    private VideoSubView(File file, Builder builder) {
+        super(builder.context);
+        this.context = builder.context;
+        this.viewType = builder.type;
+        this.isSubChange = builder.isSub;
+        this.playOffset = builder.playOffset;
+        videoFile = file;
         updateHandler = new UpdateHandler(context.getMainLooper());
         initVideoView(context);
-        videoFile = file;
-        initVideoByFile(file);
+        initVideoByFile(file.getAbsolutePath());
     }
 
-    private VideoSubView(Context context, String httpPath, VideoViewType viewType, boolean isSubChange) {
-        super(context);
-        this.context = context;
-        this.viewType = viewType;
-        this.isSubChange = isSubChange;
+    private VideoSubView(String httpPath, Builder builder) {
+        super(builder.context);
+        this.context = builder.context;
+        this.viewType = builder.type;
+        this.isSubChange = builder.isSub;
+        this.playOffset = builder.playOffset;
         updateHandler = new UpdateHandler(context.getMainLooper());
         initVideoView(context);
         File cacheFile = getCacheFile(httpPath);
         if (cacheFile.exists()) {
-            initVideoByFile(cacheFile);
+            initVideoByFile(cacheFile.getAbsolutePath());
         } else {
             cacheVideo(httpPath);
         }
     }
 
-    private void initVideoByFile(File file) {
-        videoView.setVideoPath(file.getAbsolutePath());
+    private void initVideoByFile(String path) {
+        videoView.setVideoPath(path);
 
-        updateDuration(file);
-        initCacheBmp(file, true);
+        updateDuration(path);
+        initCacheBmp(path, true);
     }
 
     private void initVideoView(Context context) {
@@ -102,58 +106,66 @@ public class VideoSubView extends ShowView {
         videoView.setOnInfoListener((MediaPlayer mp, int what, int extra) -> {
             //播放第一帧
             LogUtils.e("video", "VideoSubView: " + what);
-            if (what == MediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START)
-                videoView.setBackgroundColor(Color.TRANSPARENT);
+            if (what == MediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START){
+                videoView.postDelayed(()->{
+                    videoView.setBackgroundColor(Color.TRANSPARENT);
+                },playOffset);
+            }
             return true;
         });
     }
 
-    private void initCacheBmp(final File file, boolean sync) {
+    private void initCacheBmp(final String path, boolean sync) {
         if (!sync) {
             HttpThreadPool.getInstance().post(() -> {
-                Bitmap thumbnail = ThumbnailUtils.createVideoThumbnail(
-                        file.getAbsolutePath(),
-                        MediaStore.Images.Thumbnails.MINI_KIND);
+                MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+                retriever.setDataSource(path);
+                Bitmap thumbnail = retriever.getFrameAtTime(0, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
                 updateHandler.sendMessage(updateHandler.obtainMessage(VIDEO_THUMB_COMPLETE, thumbnail));
             });
         } else {
-            Bitmap thumbnail = ThumbnailUtils.createVideoThumbnail(
-                    file.getAbsolutePath(),
-                    MediaStore.Images.Thumbnails.MINI_KIND);
+            MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+            retriever.setDataSource(path);
+            Bitmap thumbnail = retriever.getFrameAtTime(0, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
             updateHandler.sendMessage(updateHandler.obtainMessage(VIDEO_THUMB_COMPLETE, thumbnail));
         }
     }
 
-    private void updateDuration(File file) {
+
+
+    private void updateDuration(String path) {
         MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-        mmr.setDataSource(file.getAbsolutePath());
+        mmr.setDataSource(path);
         duration = Long.parseLong(mmr.extractMetadata(METADATA_KEY_DURATION));
     }
 
     @Override
     public void onShowStart(final HBanner hBanner, int position) {
-        LogUtils.e("video", "onShowStart: " + position);
+        //记录当前播放模式
+        super.onShowStart(hBanner, position);
+        LogUtils.e("lake", "onShowStart: " + position + ",auto=" + auto);
         hBanner.pause(0);
         videoView.resume();
         videoView.start();
 
-        //当手动滑动时，视频还未结束，会导致轮播停止,是因为视频直接被stop没有执行shownext
         videoView.setOnCompletionListener(m -> {
             videoView.stopPlayback();
-            if (!isSubChange) {
-                hBanner.showNext(true);//可能当前不是自动模式，这里会强制开启自动模式
+            if (!isSubChange && auto) {//非同步且是自动播放模式会在视频结束时自动播放下一项
+                hBanner.showNext(true);
             }
         });
     }
 
     @Override
-    public void onShowFinish() {
-        LogUtils.e("video", "onShowFinish: ");
+    public boolean onShowFinish() {
+        LogUtils.e("lake", "onShowFinish: ");
         if (videoView.isPlaying()) {
             videoView.stopPlayback();
         }
         if (defaultDrawable != null)
             videoView.setBackground(defaultDrawable);
+        //保障自动播放模式不受滑动影响
+        return super.onShowFinish();
     }
 
     /**
@@ -187,14 +199,18 @@ public class VideoSubView extends ShowView {
         public void handleMessage(@NonNull Message msg) {
             switch (msg.what) {
                 case VIDEO_CACHE_COMPLETE:
-                    updateDuration(videoFile);
-                    initCacheBmp(videoFile, false);
+                    updateDuration(videoFile.getAbsolutePath());
+                    initCacheBmp(videoFile.getAbsolutePath(), false);
                     Objects.requireNonNull(videoView);
                     videoView.setVideoPath(videoFile.getAbsolutePath());
                     break;
                 case VIDEO_THUMB_COMPLETE:
                     Objects.requireNonNull(mImageCache);
                     Bitmap bitmap = (Bitmap) msg.obj;
+                    if(viewType==VideoViewType.FULL)
+                        mImageCache.setScaleType(ImageView.ScaleType.FIT_XY);
+                    else
+                        mImageCache.setScaleType(ImageView.ScaleType.FIT_CENTER);
                     mImageCache.setImageBitmap(bitmap);
                     defaultDrawable = new BitmapDrawable(context.getResources(), bitmap);
                     videoView.setBackground(defaultDrawable);
@@ -232,6 +248,7 @@ public class VideoSubView extends ShowView {
         private String urlStr;
         private File file;
         private Context context;
+        private long playOffset;
 
 
         public Builder(Context context) {
@@ -240,6 +257,7 @@ public class VideoSubView extends ShowView {
             isSub = false;
             urlStr = null;
             file = null;
+            playOffset = 0;
         }
 
         public Builder gravity(VideoViewType type) {
@@ -249,6 +267,11 @@ public class VideoSubView extends ShowView {
 
         public Builder isSub(boolean sub) {
             this.isSub = sub;
+            return this;
+        }
+
+        public Builder playOffset(long offset){
+            this.playOffset = offset;
             return this;
         }
 
@@ -268,9 +291,9 @@ public class VideoSubView extends ShowView {
             if (urlStr == null && file == null)
                 throw new IllegalArgumentException("the VideoSubView must be have the file or url param!");
             if (file != null) {
-                return new VideoSubView(context, file, type, isSub);
+                return new VideoSubView(file, this);
             } else {
-                return new VideoSubView(context, urlStr, type, isSub);
+                return new VideoSubView(urlStr, this);
             }
         }
     }

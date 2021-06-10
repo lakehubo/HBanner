@@ -17,9 +17,9 @@ public interface SubView {
     void onShowStart(final HBanner hBanner, int position);
 
     /**
-     * 结束显示
+     * 结束显示 返回是否自动播放
      */
-    void onShowFinish();
+    boolean onShowFinish();
 
     /**
      * 当前view显示的时间 单位ms

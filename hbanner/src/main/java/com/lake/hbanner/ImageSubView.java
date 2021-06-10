@@ -42,6 +42,7 @@ public class ImageSubView extends ShowView {
         updateHandler = new UpdateHandler(context.getMainLooper());
         imageView = new ImageView(context);
         imageView.setScaleType(scaleType);
+        mImageCache.setScaleType(scaleType);
         imageView.setImageResource(resId);
         mImageCache.setImageResource(resId);
     }
@@ -53,6 +54,7 @@ public class ImageSubView extends ShowView {
         updateHandler = new UpdateHandler(context.getMainLooper());
         imageView = new ImageView(context);
         imageView.setScaleType(scaleType);
+        mImageCache.setScaleType(scaleType);
         File cacheFile = getCacheFile(httpPath);
         if (cacheFile.exists()) {
             initByFile(cacheFile);
@@ -70,6 +72,8 @@ public class ImageSubView extends ShowView {
         updateHandler = new UpdateHandler(context.getMainLooper());
         imageView = new ImageView(context);
         imageView.setScaleType(scaleType);
+        mImageCache.setScaleType(scaleType);
+        mImageCache.setScaleType(scaleType);
         initByFile(imgFile);
     }
 
@@ -86,11 +90,6 @@ public class ImageSubView extends ShowView {
     @Override
     public View getView() {
         return imageView;
-    }
-
-    @Override
-    public View getPreView() {
-        return mImageCache;
     }
 
     public ImageView getImageView() {

@@ -2,5 +2,7 @@
     <string name="app_name">HBanner</string>
     <string name="add">Add</string>
     <string name="remove">Remove</string>
+    <string name="release">Release</string>
+    <string name="play">play</string>
     <string name="tip">图片视频混播HBanner(1.1.0)</string>
 </resources>
