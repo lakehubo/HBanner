@@ -149,7 +149,7 @@ dependencies {
                   		.url("https://v-cdn.zjol.com.cn/123468.mp4")
                   		.gravity(VideoViewType.FULL)
                   		.isSub(false)
-    									.playOffset(600)
+    				.playOffset(600)
                   		.build();
   ```
   
