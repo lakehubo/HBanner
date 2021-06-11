@@ -59,7 +59,7 @@ dependencies {
   <groupId>io.github.lakehubo</groupId>
   <artifactId>com.lakehubo.hbanner</artifactId>
   <version>1.1.1-alpha</version>
-  <type>pom</type>
+  <type>aar</type>
 </dependency>
 ```
 
