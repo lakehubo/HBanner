@@ -2,6 +2,7 @@ package com.lake.banner.net;
 
 /**
  * 网络请求类封装
+ * @author lake
  */
 public class HttpClient extends HttpEvent implements HttpManager {
     private volatile static HttpClient httpClient = null;

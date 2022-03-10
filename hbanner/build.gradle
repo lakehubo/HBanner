@@ -16,6 +16,10 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            buildConfigField "Boolean", "ENVIRONMENT", "true"
+        }
+        debug{
+            buildConfigField "Boolean", "ENVIRONMENT", "true"
         }
     }
     lintOptions {
@@ -31,7 +35,7 @@ dependencies {
     testImplementation 'junit:junit:4.13'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
 
-    compileOnly 'androidx.appcompat:appcompat:1.2.0'
+    compileOnly 'androidx.appcompat:appcompat:1.4.1'
     api 'com.google.code.gson:gson:2.8.6'
 }
 

@@ -5,5 +5,8 @@ package com.lake.hbanner;
  * create by 12/7/20 10:52 AM
  */
 public enum VideoViewType {
-    FULL,CENTER
+    //全屏
+    FULL,
+    //居中
+    CENTER
 }
