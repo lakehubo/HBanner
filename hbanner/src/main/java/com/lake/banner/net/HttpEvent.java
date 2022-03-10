@@ -27,6 +27,9 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+/**
+ *
+ */
 public abstract class HttpEvent {
     void httpRequest(HttpParam param, HttpCallback callback) {
         LogUtils.e("lake", param.toString());
@@ -38,10 +41,13 @@ public abstract class HttpEvent {
                 trustAllHosts((HttpsURLConnection) conn);
                 ((HttpsURLConnection) conn).setHostnameVerifier(DO_NOT_VERIFY);
             }
-            conn.setConnectTimeout(param.timeOut);//设置连接超时时间
-            conn.setReadTimeout(param.readTimeOut);//设置读取超时
+            //设置连接超时时间
+            conn.setConnectTimeout(param.timeOut);
+            //设置读取超时
+            conn.setReadTimeout(param.readTimeOut);
             HashMap<String, String> map = param.getHeader();
-            if (map != null && map.size() > 0) {//设置头信息
+            //设置头信息
+            if (map != null && map.size() > 0) {
                 for (Map.Entry<String, String> entry : map.entrySet()) {
                     conn.setRequestProperty(entry.getKey(), entry.getValue());
                 }
@@ -54,7 +60,7 @@ public abstract class HttpEvent {
             }
         } catch (IOException e) {
             e.printStackTrace();
-            Log.e("HttpClient", "httpRequest: " + e.toString());
+            LogUtils.e("HttpClient", "httpRequest: " + e.toString());
             callback.failed("HttpRequest failed state:" + e.toString());
         } finally {
             if (conn != null)
@@ -64,6 +70,7 @@ public abstract class HttpEvent {
 
     /**
      * 覆盖java默认的证书验证
+     * 主要避开https证书验证功能，可以访问无证书服务器的接口
      */
     private static final TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager() {
         @Override
@@ -111,10 +118,19 @@ public abstract class HttpEvent {
         return oldFactory;
     }
 
+    /**
+     * 获取文件
+     * @param conn
+     * @param param
+     * @param callback
+     * @return
+     * @throws IOException
+     */
     private File getResultFile(HttpURLConnection conn, HttpParam param, HttpCallback callback) throws IOException {
         InputStream inputStream = conn.getInputStream();
         String fileName = "";
-        if (!TextUtils.isEmpty(param.getFileName())) {//获取设置的文件名
+        //获取设置的文件名
+        if (!TextUtils.isEmpty(param.getFileName())) {
             fileName = param.getFileName();
         } else {//使用默认的文件名
             String urlFilePath = conn.getURL().getFile();

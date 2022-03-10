@@ -19,6 +19,9 @@ import com.lake.hbanner.VideoViewType;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * hbanner 调用示例
+ */
 public class MainActivity extends BaseActivity implements View.OnClickListener, ViewTreeObserver.OnGlobalLayoutListener {
     private Button add, remove, play, release;
     private BannerViewPager viewPager, viewPager2;

@@ -8,6 +8,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+/**
+ * activity 基类
+ * 主要用于权限判断 target小于等于28才能使用外部存储
+ */
 public abstract class BaseActivity extends AppCompatActivity {
 
     private static final int REQUEST_EXTERNAL_STORAGE = 0x01;
