@@ -21,6 +21,7 @@ import java.util.List;
 
 /**
  * hbanner 调用示例
+ * @author lake
  */
 public class MainActivity extends BaseActivity implements View.OnClickListener, ViewTreeObserver.OnGlobalLayoutListener {
     private Button add, remove, play, release;
@@ -143,15 +144,17 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
 
     @Override
     protected void onResume() {
-        if (hBanner != null)
+        if (hBanner != null) {
             hBanner.play(true);
+        }
         super.onResume();
     }
 
     @Override
     protected void onPause() {
-        if (hBanner != null)
+        if (hBanner != null) {
             hBanner.pause(0);
+        }
         super.onPause();
     }
 
@@ -182,8 +185,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
 
     @Override
     protected void onStop() {
-        if (hBanner != null)
+        if (hBanner != null) {
             hBanner = null;
+        }
         super.onStop();
     }
 }
