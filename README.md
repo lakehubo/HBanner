@@ -59,7 +59,7 @@ dependencies {
   <groupId>io.github.lakehubo</groupId>
   <artifactId>com.lakehubo.hbanner</artifactId>
   <version>1.1.1-alpha</version>
-  <type>pom</type>
+  <type>aar</type>
 </dependency>
 ```
 
@@ -149,7 +149,7 @@ dependencies {
                   		.url("https://v-cdn.zjol.com.cn/123468.mp4")
                   		.gravity(VideoViewType.FULL)
                   		.isSub(false)
-    									.playOffset(600)
+    				.playOffset(600)
                   		.build();
   ```
   
