@@ -95,9 +95,10 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                 .duration(5000)
                 .build());
         data.add(new VideoSubView.Builder(getBaseContext())
-                .url("https://v-cdn.zjol.com.cn/123468.mp4")
+                .url("http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4")
                 .gravity(VideoViewType.FULL)
-                .playOffset(600)//让缓存图片显示600ms后再播放，可解决videoview启动时候闪烁问题
+                //让缓存图片显示600ms后再播放，可解决videoview启动时候闪烁问题
+                .playOffset(600)
                 .isSub(false)
                 .build());
         hBanner.sources(data);
@@ -128,7 +129,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener, 
                 .resId(R.mipmap.b3)
                 .build());
         data2.add(new VideoSubView.Builder(getBaseContext())
-                .url("https://v-cdn.zjol.com.cn/276982.mp4")
+                .url("http://vjs.zencdn.net/v/oceans.mp4")
                 .isSub(true)
                 .build());
 

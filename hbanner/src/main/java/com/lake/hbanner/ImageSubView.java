@@ -26,35 +26,35 @@ import java.io.File;
 public class ImageSubView extends ShowView {
     ImageView imageView;
     final long duration;
-    //图片网络地址
+    /**
+     * 图片网络地址
+     */
     private String httpPath = null;
-    //图片res资源id
+    /**
+     * 图片res资源id
+     */
     private int mResource = 0;
-    //图片文件
+    /**
+     * 图片文件
+     */
     private File imgFile = null;
     private static final int IMG_CACHE_COMPLETE = 901;
     private final UpdateHandler updateHandler;
+    /**
+     * 协同标记
+     */
+    private String tag = null;
 
-    private ImageSubView(Context context, ScaleType scaleType, @DrawableRes int resId, long duration) {
-        super(context);
-        this.duration = duration;
+    private ImageSubView(@DrawableRes int resId, Builder builder) {
+        this(builder);
         this.mResource = resId;
-        updateHandler = new UpdateHandler(context.getMainLooper());
-        imageView = new ImageView(context);
-        imageView.setScaleType(scaleType);
-        mImageCache.setScaleType(scaleType);
         imageView.setImageResource(resId);
         mImageCache.setImageResource(resId);
     }
 
-    private ImageSubView(Context context, ScaleType scaleType, String httpPath, long duration) {
-        super(context);
-        this.duration = duration;
+    private ImageSubView(String httpPath, Builder builder) {
+        this(builder);
         this.httpPath = httpPath;
-        updateHandler = new UpdateHandler(context.getMainLooper());
-        imageView = new ImageView(context);
-        imageView.setScaleType(scaleType);
-        mImageCache.setScaleType(scaleType);
         File cacheFile = getCacheFile(httpPath);
         if (cacheFile.exists()) {
             initByFile(cacheFile);
@@ -65,16 +65,19 @@ public class ImageSubView extends ShowView {
         }
     }
 
-    private ImageSubView(Context context, ScaleType scaleType, File imgFile, long duration) {
-        super(context);
-        this.duration = duration;
+    private ImageSubView(File imgFile, Builder builder) {
+        this(builder);
         this.imgFile = imgFile;
-        updateHandler = new UpdateHandler(context.getMainLooper());
-        imageView = new ImageView(context);
-        imageView.setScaleType(scaleType);
-        mImageCache.setScaleType(scaleType);
-        mImageCache.setScaleType(scaleType);
         initByFile(imgFile);
+    }
+
+    private ImageSubView(Builder builder) {
+        super(builder.context);
+        this.duration = builder.duration;
+        updateHandler = new UpdateHandler(builder.context.getMainLooper());
+        imageView = new ImageView(builder.context);
+        imageView.setScaleType(builder.scaleType);
+        mImageCache.setScaleType(builder.scaleType);
     }
 
     private void initByFile(File file) {
@@ -143,6 +146,7 @@ public class ImageSubView extends ShowView {
         private File file;
         private int resId;
         private long duration;
+        private String tag;
 
         public Builder(Context context) {
             this.context = context;
@@ -179,15 +183,20 @@ public class ImageSubView extends ShowView {
             return this;
         }
 
+        public Builder tag(String tag) {
+            this.tag = tag;
+            return this;
+        }
+
         public ImageSubView build() {
             if (urlStr == null && file == null && resId == 0)
                 throw new IllegalArgumentException("image must be have one drawable source!");
             if (file != null) {
-                return new ImageSubView(context, scaleType, file, duration);
+                return new ImageSubView(file, this);
             } else if (urlStr != null) {
-                return new ImageSubView(context, scaleType, urlStr, duration);
+                return new ImageSubView(urlStr, this);
             } else {
-                return new ImageSubView(context, scaleType, resId, duration);
+                return new ImageSubView(resId, this);
             }
         }
     }
