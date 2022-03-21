@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/dp_35"
+    android:padding="@dimen/dp_3"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <TextView
+        android:id="@+id/nv_name"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_width="@dimen/dp_60"
+        android:textSize="@dimen/sp_12"
+        android:gravity="center_vertical"
+        android:text="设备编号:"
+        android:textColor="@color/white"
+        android:layout_height="match_parent"/>
+    <EditText
+        android:id="@+id/nv_edit"
+        app:layout_constraintStart_toEndOf="@id/nv_name"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_width="0dp"
+        android:padding="@dimen/dp_3"
+        android:textColorHint="@color/white"
+        android:background="@drawable/wihte_edit_rect_bg"
+        android:layout_height="match_parent"/>
+</androidx.constraintlayout.widget.ConstraintLayout>

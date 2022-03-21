@@ -47,6 +47,7 @@ public class VideoSubView extends ShowView {
     private final long playOffset;
     //当该view是处于被同步的banner中时候需要设置为true
     private final boolean isSubChange;
+    private String tag = null;
 
     private VideoSubView(File file, Builder builder) {
         super(builder.context);
@@ -106,10 +107,10 @@ public class VideoSubView extends ShowView {
         videoView.setOnInfoListener((MediaPlayer mp, int what, int extra) -> {
             //播放第一帧
             LogUtils.e("video", "VideoSubView: " + what);
-            if (what == MediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START){
-                videoView.postDelayed(()->{
+            if (what == MediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START) {
+                videoView.postDelayed(() -> {
                     videoView.setBackgroundColor(Color.TRANSPARENT);
-                },playOffset);
+                }, playOffset);
             }
             return true;
         });
@@ -130,7 +131,6 @@ public class VideoSubView extends ShowView {
             updateHandler.sendMessage(updateHandler.obtainMessage(VIDEO_THUMB_COMPLETE, thumbnail));
         }
     }
-
 
 
     private void updateDuration(String path) {
@@ -207,7 +207,7 @@ public class VideoSubView extends ShowView {
                 case VIDEO_THUMB_COMPLETE:
                     Objects.requireNonNull(mImageCache);
                     Bitmap bitmap = (Bitmap) msg.obj;
-                    if(viewType==VideoViewType.FULL)
+                    if (viewType == VideoViewType.FULL)
                         mImageCache.setScaleType(ImageView.ScaleType.FIT_XY);
                     else
                         mImageCache.setScaleType(ImageView.ScaleType.FIT_CENTER);
@@ -249,7 +249,7 @@ public class VideoSubView extends ShowView {
         private File file;
         private Context context;
         private long playOffset;
-
+        private String tag;
 
         public Builder(Context context) {
             this.context = context;
@@ -270,7 +270,7 @@ public class VideoSubView extends ShowView {
             return this;
         }
 
-        public Builder playOffset(long offset){
+        public Builder playOffset(long offset) {
             this.playOffset = offset;
             return this;
         }
@@ -284,6 +284,11 @@ public class VideoSubView extends ShowView {
 
         public Builder url(String url) {
             this.urlStr = url;
+            return this;
+        }
+
+        public Builder tag(String tag) {
+            this.tag = tag;
             return this;
         }
 

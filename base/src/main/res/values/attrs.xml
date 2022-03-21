@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="NameValueTextView">
+        <attr name="tv_name" format="string"/>
+        <attr name="tv_value" format="string"/>
+    </declare-styleable>
+    <declare-styleable name="NameValueEditView">
+        <attr name="ev_name" format="string"/>
+        <attr name="ev_value" format="string"/>
+        <attr name="ev_hint" format="string"/>
+    </declare-styleable>
+</resources>

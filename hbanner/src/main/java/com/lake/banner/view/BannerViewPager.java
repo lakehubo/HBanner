@@ -10,7 +10,10 @@ import android.view.MotionEvent;
 
 import java.util.ArrayList;
 
-
+/**
+ * 具备协同功能viewpager
+ * @author lake
+ */
 public class BannerViewPager extends ViewPager {
     private boolean scrollable = true;
     private final ArrayList<BannerViewPager>
