@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="connect_error">网络请求失败，请检查手机网络是否通畅</string>
+    <string name="connect_timeout">连接超时</string>
+    <string name="net_error">网络问题</string>
+    <string name="parse_data_error">解析数据失败</string>
+    <string name="unknow_error">未知错误</string>
+
+    <string name="server_error">服务器处理请求出错</string>
+    <string name="server_can_not_deal_error">服务器无法处理请求</string>
+    <string name="server_reset_host">请求被重定向到其他页面</string>
+
+</resources>
